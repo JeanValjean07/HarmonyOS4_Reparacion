@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="HeadBackground">#FFFFFF</color>
+    <color name="HeadText">#000000</color>
+    <color name="HeadTextButton">#000000</color>
+
+    <color name="ButtonBg">#E1BEE7</color>
+    <color name="ButtonText">#000000</color>
+    <color name="ButtonBgHighlight">#F48FB1</color>
+    <color name="ButtonTextHighlight">#000000</color>
+    <color name="ButtonBgVeryHeavy">#FF5252</color>
+    <color name="ButtonTextVeryHeavy">#FFFFFF</color>
+
+    <color name="SwitchTrackOpen">#616161</color>
+    <color name="SwitchThumbOpen">#212121</color>
+    <color name="SwitchTrackClose">#E0E0E0</color>
+    <color name="SwitchThumbClose">#BDBDBD</color>
+    <color name="SwitchText">#000000</color>
+
+    <color name="CardBackground">#FFFFFF</color>
+    <color name="CardText">#000000</color>
+    <color name="CardText2">#424242</color>
+    <color name="CardCover">#70EEEEEE</color>
+    <color name="CardText3">#000000</color>
+
+    <color name="Background">#FFFFFF</color>
+
+    <color name="Open">#40AED581</color>
+    <color name="notOpen">#60E57373</color>
+
+    <color name="colorPrimary">#F5F5F5</color>
+    <color name="colorPrimaryDark">#212121</color>
+    <color name="grey">#757575</color>
+
+
+
+
+</resources>

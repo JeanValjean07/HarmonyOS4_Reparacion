@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.suming.cpa">
+
+
+
+    <meta-data
+        android:name="com.huawei.messaging.default_notification_icon"
+        android:value="@drawable/ic_launcher_foreground"
+        />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER"/>
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATIONS"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
+
+
+
+
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="补全计划A"
+        android:supportsRtl="true"
+        android:extractNativeLibs="true"
+        android:theme="@style/MainTheme">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".DarkMode"
+            android:exported="true"/>
+
+        <activity android:name=".DarkModePure"
+            android:excludeFromRecents="true"
+            android:theme="@style/DarkModePureTheme"
+            android:exported="true"/>
+
+
+        <activity android:name=".NotiControl"
+            android:exported="true"/>
+
+        <activity android:name=".Guidance"
+            android:exported="true"/>
+
+        <activity android:name=".Settings"
+            android:exported="true"/>
+
+        <activity android:name=".About"
+            android:exported="true"/>
+
+
+        <service
+            android:name="com.suming.cpa.DarkModeTileService"
+            android:exported="true"
+            android:label="深色壁纸"
+            android:icon="@drawable/ic_launcher_foreground"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:resource="@xml/my_tile"
+                android:name="huawei.theme.accent_support"
+                android:value="true"
+                />
+        </service>
+
+        <service android:name=".NotiService"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+
+    </application>
+
+
+</manifest>

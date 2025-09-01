@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    android:background="@color/Background"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar1"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/HeadBackground"
+            android:elevation="10dp">
+
+            <TextView
+                android:id="@+id/toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="19dp"
+                android:text="补全计划"
+                android:textColor="@color/HeadText"
+                android:textSize="24sp" />
+
+            <Button
+                android:id="@+id/buttonExit"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:textColor="@color/ButtonText"
+                android:padding="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="退出" />
+
+
+            <Button
+                android:id="@+id/buttonSetting"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:textColor="@color/ButtonText"
+                android:padding="8dp"
+                android:text="设置" />
+
+            <Button
+                android:id="@+id/buttonGuidance"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:textColor="@color/ButtonText"
+                android:padding="8dp"
+                android:text="指南" />
+
+
+
+
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="14dp"
+        android:orientation="vertical">
+
+
+    <Button
+        android:id="@+id/buttonSwitchDark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="深色模式壁纸"
+        />
+
+    <Button
+        android:id="@+id/buttonNotiController"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="通知管理"
+        />
+
+    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
