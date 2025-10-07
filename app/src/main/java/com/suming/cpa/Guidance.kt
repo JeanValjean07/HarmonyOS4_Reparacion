@@ -29,7 +29,5 @@ class Guidance : AppCompatActivity() {
 
 
 
-
-
     }//onCreate END
 }//class END

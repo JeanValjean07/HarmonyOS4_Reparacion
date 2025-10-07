@@ -32,4 +32,6 @@
     <color name="colorPrimaryDark">#212121</color>
     <color name="grey">#BDBDBD</color>
 
+    <color name="Text2">#F5F5F5</color>
+
 </resources>

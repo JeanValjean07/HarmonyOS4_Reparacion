@@ -64,6 +64,13 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, NotiControl::class.java)
             startActivity(intent)
         }
+        //按钮：亮度管理
+        val button8=findViewById<Button>(R.id.buttonBrightnessController)
+        button8.setOnClickListener {
+            val intent = Intent(this, BrightnessController::class.java)
+            startActivity(intent)
+        }
+
 
 
     } //onCreate END

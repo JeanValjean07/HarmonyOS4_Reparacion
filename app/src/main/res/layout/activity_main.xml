@@ -8,20 +8,17 @@
     android:fitsSystemWindows="false"
     android:background="@color/Background"
     tools:context=".MainActivity">
-
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
-
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar1"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:background="@color/HeadBackground"
             android:elevation="10dp">
-
+            <!-- AppBar: 补全计划 -->
             <TextView
                 android:id="@+id/toolbar_title"
                 android:layout_width="wrap_content"
@@ -31,7 +28,7 @@
                 android:text="补全计划"
                 android:textColor="@color/HeadText"
                 android:textSize="24sp" />
-
+            <!-- AppBar: 退出按钮 -->
             <Button
                 android:id="@+id/buttonExit"
                 android:layout_width="50dp"
@@ -42,8 +39,7 @@
                 android:padding="8dp"
                 android:layout_marginEnd="8dp"
                 android:text="退出" />
-
-
+            <!-- AppBar: 设置按钮 -->
             <Button
                 android:id="@+id/buttonSetting"
                 android:layout_width="50dp"
@@ -53,7 +49,7 @@
                 android:textColor="@color/ButtonText"
                 android:padding="8dp"
                 android:text="设置" />
-
+            <!-- AppBar: 指南按钮 -->
             <Button
                 android:id="@+id/buttonGuidance"
                 android:layout_width="50dp"
@@ -63,41 +59,36 @@
                 android:textColor="@color/ButtonText"
                 android:padding="8dp"
                 android:text="指南" />
-
-
-
-
-
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="14dp"
-        android:orientation="vertical">
-
-
-    <Button
-        android:id="@+id/buttonSwitchDark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="深色模式壁纸"
-        />
-
-    <Button
-        android:id="@+id/buttonNotiController"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="通知管理"
-        />
-
-    </LinearLayout>
+        <!-- 主界面按钮区域容器 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="14dp"
+            android:orientation="vertical">
+            <!-- 深色模式壁纸 -->
+            <Button
+                android:id="@+id/buttonSwitchDark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="深色模式壁纸" />
+            <!-- 通知管理 -->
+            <Button
+                android:id="@+id/buttonNotiController"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="通知管理" />
+            <!-- 亮度管理 -->
+            <Button
+                android:id="@+id/buttonBrightnessController"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="亮度管理" />
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -2,13 +2,13 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_about"
+    android:id="@+id/activity_brightness"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="false"
     android:background="@color/Background"
-    tools:context=".About">
-
+    tools:context=".BrightnessController">
+    <!-- AppBar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,34 +16,68 @@
         android:outlineSpotShadowColor="@color/HeadText"
         app:liftOnScrollColor="@color/HeadBackground"
         android:outlineAmbientShadowColor="@color/HeadText">
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar1"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:background="@android:color/transparent"
-            android:elevation="10dp">
+            android:elevation="10dp"
+            >
+
             <ImageButton
-                android:id="@+id/buttonExit"
+                android:id="@+id/buttonToolbarExit"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:layout_gravity="start"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="返回上一级页面"
+                android:contentDescription="退出"
                 android:padding="8dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_go_back_2" />
+                android:src="@drawable/ic_go_back_2"
+                />
+
             <TextView
                 android:id="@+id/toolbar_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|center"
                 android:padding="8dp"
-                android:text="关于"
+                android:text="亮度管理"
                 android:textColor="@color/HeadText"
                 android:textSize="20sp" />
+
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
-
+    <!-- NoticeCard -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/noticeCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|top"
+        app:cardElevation="50dp"
+        app:cardCornerRadius="50dp"
+        android:backgroundTint="@color/Background"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="50dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/notice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textColorHint="@color/ButtonText"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="动态提示文本区域"
+            android:textColor="@color/HeadText"
+            android:textSize="12sp"
+            />
+    </androidx.cardview.widget.CardView>
+    <!-- 下方可滚动区域 -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -53,25 +87,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- 版本卡片 -->
+            <!-- 卡片1 -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
+                android:layout_height="50dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="10dp"
-                android:layout_height="match_parent"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="5dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:src="@drawable/ic_launcher_foreground"
-                        />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -81,109 +110,46 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:text="补全计划"
+                            android:layout_marginStart="20dp"
+                            android:text="当前亮度"
                             android:layout_weight="0"/>
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
                             android:layout_weight="1"/>
                         <TextView
-                            android:id="@+id/version"
+                            android:id="@+id/currentBrightness"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:layout_marginEnd="10dp"
+                            android:layout_marginEnd="15dp"
                             android:textSize="11sp"
-                            android:text="当前版本1.0"
+                            android:text="currentBrightnessValue"
                             android:layout_weight="0"/>
-
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-            <!-- 项目Github仓库页 -->
+            <!-- 卡片2 -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="5dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:text="项目Github仓库页(检查更新)"
-                        android:textSize="13sp"
-                        android:layout_weight="0"/>
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_weight="1"/>
-                    <TextView
-                        android:id="@+id/buttonGoGithub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:text="前往"
-                        android:textSize="11sp"
-                        android:layout_weight="0"/>
-                </LinearLayout>
-
-
-            </androidx.cardview.widget.CardView>
-            <!-- 作者酷安主页 -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="10dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="5dp">
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:padding="16dp"
-                        android:text="作者酷安主页(可反馈问题)"
-                        android:textSize="13sp" />
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_weight="1" />
-                    <TextView
-                        android:id="@+id/buttonGoCoolApk"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0"
-                        android:padding="16dp"
-                        android:text="前往"
-                        android:textSize="11sp" />
+
+
                 </LinearLayout>
-
-
             </androidx.cardview.widget.CardView>
-            <!--  超链接样式:开源许可  -->
-            <TextView
-                android:id="@+id/openSourceLicense"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:layout_gravity="center"
-                android:clickable="true"
-                android:text="开放源代码许可"
-                android:textColor="@color/Text2"
-                android:textSize="12sp" />
+
+
+
 
 
 

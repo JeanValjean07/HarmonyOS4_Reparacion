@@ -12,17 +12,10 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
-    <uses-permission android:name="android.permission.ACCESS_NOTIFICATIONS"
-        tools:ignore="ProtectedPermissions" />
-
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATIONS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
-    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-        tools:ignore="ProtectedPermissions" />
-
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
-
-
+    <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
 
 
@@ -44,28 +37,50 @@
             </intent-filter>
         </activity>
 
+        <!-- 深色模式壁纸 -->
         <activity android:name=".DarkMode"
             android:exported="true"/>
 
+        <!-- 切换模式纯净版 -->
         <activity android:name=".DarkModePure"
             android:excludeFromRecents="true"
             android:theme="@style/DarkModePureTheme"
             android:exported="true"/>
 
+        <!-- 亮度控制器 -->
+        <activity android:name=".BrightnessController"
+            android:exported="true"/>
 
+        <!-- 通知控制 -->
         <activity android:name=".NotiControl"
             android:exported="true"/>
 
+        <!-- 引导 -->
         <activity android:name=".Guidance"
             android:exported="true"/>
 
+        <!-- 设置 -->
         <activity android:name=".Settings"
             android:exported="true"/>
 
+        <!-- 关于 -->
         <activity android:name=".About"
             android:exported="true"/>
 
+        <!-- 开放源代码许可 -->
+        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+            android:theme="@style/THEME_OSS"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
+        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+            android:theme="@style/THEME_OSS"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
 
+
+        <!-- 服务：控制中心Tile -->
         <service
             android:name="com.suming.cpa.DarkModeTileService"
             android:exported="true"
@@ -81,7 +96,7 @@
                 android:value="true"
                 />
         </service>
-
+        <!-- 服务：通知监听 -->
         <service android:name=".NotiService"
             android:exported="true"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
@@ -90,8 +105,5 @@
             </intent-filter>
         </service>
 
-
     </application>
-
-
 </manifest>

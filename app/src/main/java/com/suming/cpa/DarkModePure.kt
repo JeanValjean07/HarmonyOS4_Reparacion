@@ -14,7 +14,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-//此文件已经过测稳定性 !!Stabled
 class DarkModePure : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,10 +33,7 @@ class DarkModePure : AppCompatActivity() {
         if (intent.getBooleanExtra("FROM_HOME",false)){
             lifecycleScope.launch { delay(500) }
             fromHome()
-            lifecycleScope.launch {
-                delay(1000)
-                finish()
-            }
+
         }
 
     }//onCreate END
@@ -76,6 +72,10 @@ class DarkModePure : AppCompatActivity() {
                 setLight()
             }
         }
+        lifecycleScope.launch {
+            delay(1000)
+            finish()
+        }
     }
 
     private fun fromTile() {
@@ -113,7 +113,7 @@ class DarkModePure : AppCompatActivity() {
     }
 
 }
-//class END
+
 
 
 

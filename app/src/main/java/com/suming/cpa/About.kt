@@ -3,7 +3,6 @@ package com.suming.cpa
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 
+@Suppress("LocalVariableName")
 class About : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,31 +34,38 @@ class About : AppCompatActivity() {
 
 
         //按钮：返回
-        val buttonT1 = findViewById<ImageButton>(R.id.buttonExit)
-        buttonT1.setOnClickListener {
+        val ButtonExit = findViewById<ImageButton>(R.id.buttonExit)
+        ButtonExit.setOnClickListener {
             finish()
         }
-        //按钮：查看开源许可
-        val buttonLicense = findViewById<Button>(R.id.buttonLicense)
-        buttonLicense.setOnClickListener {
-            startActivity(
-                Intent(this, com.google.android.gms.oss.licenses.OssLicensesMenuActivity::class.java)
-            )
-        }
         //按钮：查看Github仓库
-        val button2 = findViewById<Button>(R.id.buttonGithub)
-        button2.setOnClickListener {
-            val url = "https://github.com/JeanValjean07/H-api31-complement-A"
+        val ButtonGoGithub = findViewById<TextView>(R.id.buttonGoGithub)
+        ButtonGoGithub.setOnClickListener {
+            val url = "https://github.com/JeanValjean07/HarmonyOS4_Reparacion"
             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
         }
         //按钮：查看酷安主页
-        val button3 = findViewById<Button>(R.id.buttonCoolApk)
-        button3.setOnClickListener {
-            val url = "http://www.coolapk.com/u/3105725"
-            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-            startActivity(intent)
+        val ButtonGoCoolApk = findViewById<TextView>(R.id.buttonGoCoolApk)
+        ButtonGoCoolApk.setOnClickListener {
+            val coolapkUri = "coolmarket://u/3105725".toUri()
+            val intent = Intent(Intent.ACTION_VIEW, coolapkUri)
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            } else {
+                val webUri = "https://www.coolapk.com/u/3105725".toUri()
+                startActivity(Intent(Intent.ACTION_VIEW, webUri))
+            }
         }
+        //超链接：开放源代码许可
+        val ButtonOpenSourceLicense = findViewById<TextView>(R.id.openSourceLicense)
+        ButtonOpenSourceLicense.paint.isUnderlineText = true
+        ButtonOpenSourceLicense.setOnClickListener {
+            startActivity(
+                Intent(this, com.google.android.gms.oss.licenses.OssLicensesMenuActivity::class.java)
+            )
+        }
+
 
 
     }//onCreate END

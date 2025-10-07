@@ -15,9 +15,7 @@
         android:background="@color/HeadBackground"
         android:outlineSpotShadowColor="@color/HeadText"
         app:liftOnScrollColor="@color/HeadBackground"
-        android:outlineAmbientShadowColor="@color/HeadText"
-        >
-
+        android:outlineAmbientShadowColor="@color/HeadText">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar1"

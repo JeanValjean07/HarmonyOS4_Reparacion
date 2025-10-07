@@ -14,7 +14,12 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:fitsSystemWindows">true</item>
         <item name="android:statusBarColor">@color/Background</item>
+    </style>
 
+    <style name="THEME_OSS" parent="Theme.Material3.DayNight">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
 

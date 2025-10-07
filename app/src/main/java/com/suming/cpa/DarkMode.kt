@@ -69,6 +69,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 
+@Suppress("LocalVariableName")
 class DarkMode: AppCompatActivity() {
     //数值设置区
     private lateinit var Switch1: SwitchCompat
@@ -94,8 +95,8 @@ class DarkMode: AppCompatActivity() {
 
         //toolbar按钮
         //按钮：toolbar返回上级
-        val buttonT1 = findViewById<ImageButton>(R.id.buttonToolbarExit)
-        buttonT1.setOnClickListener {
+        val ButtonExit = findViewById<ImageButton>(R.id.buttonToolbarExit)
+        ButtonExit.setOnClickListener {
             finish() }
 
         //开关：将选择的壁纸保存到外部
