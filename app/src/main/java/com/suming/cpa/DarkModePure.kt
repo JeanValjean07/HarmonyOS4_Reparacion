@@ -26,13 +26,17 @@ class DarkModePure : AppCompatActivity() {
 
 
         if (intent.getBooleanExtra("FROM_TILE", false)) {
-            startFromTile()
+            startFromControlCenter()
         }
 
         if (intent.getBooleanExtra("FROM_HOME",false)){
-            startFromHome()
+            lifecycleScope.launch {
+                delay(500)
+                startFromDesktopLauncher()
+            }
         }
 
+        //错误提示:点击跳转至壁纸设置页
         val noticeCard = findViewById<CardView>(R.id.noticeCard)
         noticeCard.setOnClickListener {
             val intent = Intent(this, DarkMode::class.java)
@@ -58,7 +62,7 @@ class DarkModePure : AppCompatActivity() {
             WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
     }
 
-    private fun startFromHome(){
+    private fun startFromDesktopLauncher(){
         val sharedPreferences=getSharedPreferences("app_prefs", MODE_PRIVATE)
         if(!sharedPreferences.contains("is_dark_wallpaper_set?") || !sharedPreferences.contains("is_light_wallpaper_set?")){
             notice("您没有设置完全部两张壁纸,请先设置")
@@ -82,7 +86,7 @@ class DarkModePure : AppCompatActivity() {
         }
     }
 
-    private fun startFromTile() {
+    private fun startFromControlCenter() {
         var sharedPreferences=getSharedPreferences("app_prefs", MODE_PRIVATE)
         if(!sharedPreferences.contains("is_dark_wallpaper_set?") || !sharedPreferences.contains("is_light_wallpaper_set?")){
             notice("您没有设置完全部两张壁纸,切换失败")

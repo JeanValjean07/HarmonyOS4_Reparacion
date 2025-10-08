@@ -83,7 +83,7 @@ class Settings : AppCompatActivity() {
         //按钮：关于/更新
         val buttonAbout = findViewById<Button>(R.id.buttonAbout)
         buttonAbout.setOnClickListener {
-            val intent = Intent(this, About::class.java)
+            val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
         }
         //按钮：退出

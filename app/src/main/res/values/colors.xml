@@ -11,6 +11,8 @@
     <color name="ButtonTextHighlight">#000000</color>
     <color name="ButtonBgVeryHeavy">#FF5252</color>
     <color name="ButtonTextVeryHeavy">#FFFFFF</color>
+    <color name="ButtonBg2">#D1C4E9</color>
+    <color name="ButtonText2">#4527A0</color>
 
     <color name="SwitchTrackOpen">#616161</color>
     <color name="SwitchThumbOpen">#212121</color>
@@ -25,6 +27,7 @@
     <color name="CardText3">#000000</color>
 
     <color name="Background">#FFFFFF</color>
+    <color name="Background2">#FFFFFF</color>
 
     <color name="Open">#40AED581</color>
     <color name="notOpen">#60E57373</color>
@@ -34,6 +37,8 @@
     <color name="grey">#757575</color>
 
     <color name="Text2">#212121</color>
+
+    <color name="White">#FFFFFF</color>
 
 
 

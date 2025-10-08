@@ -93,8 +93,8 @@ class DarkMode: AppCompatActivity() {
         //准备工作
         preCheck()
 
-        //toolbar按钮
-        //按钮：toolbar返回上级
+
+        //按钮：退出
         val ButtonExit = findViewById<ImageButton>(R.id.buttonToolbarExit)
         ButtonExit.setOnClickListener {
             finish()
@@ -125,7 +125,7 @@ class DarkMode: AppCompatActivity() {
 
         //主区域按钮
         //按钮：选择/更改深色壁纸
-        val ButtonSelectDarkWp = findViewById<Button>(R.id.buttonChangeDark)
+        val ButtonSelectDarkWp = findViewById<TextView>(R.id.buttonChangeDark)
         ButtonSelectDarkWp.setOnClickListener {
             val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
             sharedPreferences.edit {
@@ -135,7 +135,7 @@ class DarkMode: AppCompatActivity() {
             openGallery()
         }
         //按钮：选择/更改浅色壁纸
-        val ButtonSelectLightWp = findViewById<Button>(R.id.buttonChangeLight)
+        val ButtonSelectLightWp = findViewById<TextView>(R.id.buttonChangeLight)
         ButtonSelectLightWp.setOnClickListener {
             val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
             sharedPreferences.edit {
@@ -445,17 +445,13 @@ class DarkMode: AppCompatActivity() {
 
         //后级工作：动态切换文字
         if (!sharedPreferences.contains("is_dark_wallpaper_set?")) {
-            val text001 = findViewById<TextView>(R.id.text001)
-            text001.setText("选择一张图片作为深色模式壁纸")
-            val buttonChangeDark = findViewById<Button>(R.id.buttonChangeDark)
-            buttonChangeDark.setText("选择")
+            val buttonChangeDark = findViewById<TextView>(R.id.buttonChangeDark)
+            buttonChangeDark.text = "选择"
 
         }
         if (!sharedPreferences.contains("is_light_wallpaper_set?")) {
-            val text002 = findViewById<TextView>(R.id.text002)
-            text002.setText("选择一张图片作为浅色模式壁纸")
-            val buttonChangeLight = findViewById<Button>(R.id.buttonChangeLight)
-            buttonChangeLight.setText("选择")
+            val buttonChangeLight = findViewById<TextView>(R.id.buttonChangeLight)
+            buttonChangeLight.text = "选择"
         }
         //Description
         if (showGuidance == 1) {

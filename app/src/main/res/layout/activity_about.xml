@@ -8,7 +8,7 @@
     android:fitsSystemWindows="false"
     android:background="@color/Background"
     tools:ignore="HardcodedText"
-    tools:context=".About">
+    tools:context=".AboutActivity">
     <!-- AppBar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"

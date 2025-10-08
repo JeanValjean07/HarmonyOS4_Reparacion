@@ -64,7 +64,7 @@
             android:exported="true"/>
 
         <!-- 关于 -->
-        <activity android:name=".About"
+        <activity android:name=".AboutActivity"
             android:exported="true"/>
 
         <!-- 开放源代码许可 -->

@@ -88,285 +88,151 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+            <!--  开关1 -->
             <LinearLayout
-                android:id="@+id/switch_container"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginEnd="16dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
-
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:text="跟随模式切换壁纸"
-                    android:textColor="@color/SwitchText"
-                    android:textSize="17sp" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/switchFollowSys"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0"
-                    app:trackTint="@color/switch_track_color"
-                    app:thumbTint="@color/switch_thumb_color"
-                    />
-
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginStart="20dp"
-
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:text="选图时将裁剪或压缩后的壁纸保存到相册"
                     android:textColor="@color/SwitchText"
-                    android:textSize="13sp" />
-
+                    android:textSize="13sp"/>
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchToGallery"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
                     android:layout_weight="0"
                     app:trackTint="@color/switch_track_color"
-                    app:thumbTint="@color/switch_thumb_color"
-                    />
-
+                    app:thumbTint="@color/switch_thumb_color"/>
             </LinearLayout>
+            <!--  开关2 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="16dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
-
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:text="选图时将壁纸裁剪为支持微动的尺寸"
                     android:textColor="@color/SwitchText"
                     android:textSize="13sp" />
-
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchSlightMove"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
                     android:layout_weight="0"
                     app:trackTint="@color/switch_track_color"
-                    app:thumbTint="@color/switch_thumb_color"
-                    />
-
+                    app:thumbTint="@color/switch_thumb_color"/>
             </LinearLayout>
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardViewDark"
+            <!--  壁纸展示区 -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_marginStart="13dp"
-                android:layout_marginEnd="13dp"
-                android:layout_height="70dp"
-                android:layout_marginTop="13dp"
-                app:cardBackgroundColor="@color/CardBackground"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="15dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-
+                android:layout_height="350dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="start">
-
-                    <LinearLayout
+                    android:layout_weight="1">
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardViewDark"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:padding="10dp"
-                        >
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_height="match_parent"
-                            android:layout_gravity="center"
-                            android:layout_weight="0"
-                            >
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="top"
-                                android:text="深色模式壁纸"
-                                android:textColor="@color/CardText"
-                                android:textSize="18sp" />
-                            <TextView
-                                android:id="@+id/text001"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="center_vertical"
-                                android:text="设置您的深色模式壁纸"
-                                android:textColor="@color/CardText2"
-                                android:textSize="13sp" />
-
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="1dp"
-                            android:layout_weight="1"/>
-
-
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_margin="1dp"
-                            android:layout_weight="0"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="2dp">
-
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="13dp"
+                        android:backgroundTint="@color/Background2"
+                        app:cardCornerRadius="15dp"
+                        app:cardElevation="5dp">
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:layout_weight="0"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/ic_notset" />
-
+                                android:src="@drawable/ic_notset"
+                                android:scaleType="centerCrop"/>
                             <ImageView
                                 android:id="@+id/imageDark"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:layout_weight="0"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/ic_notset" />
-
-                            <View
+                                android:src="@drawable/ic_notset"
+                                android:scaleType="centerCrop"/>
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@color/CardCover" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/buttonChangeDark"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="更换"
-                                android:padding="1dp"
-                                android:textColor="@color/CardText3"
-                                android:background="#00000000"
-                                android:textSize="12sp"
-                                android:layout_gravity="center"
-                                app:cornerRadius="0dp"
-                                />
-
-                        </androidx.cardview.widget.CardView>
-
-
-                    </LinearLayout>
+                                android:layout_height="30dp"
+                                android:background="@color/Background2"
+                                app:layout_constraintBottom_toBottomOf="parent">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="深色模式壁纸"
+                                    android:layout_gravity="center"
+                                    android:layout_marginStart="10dp"
+                                    android:textColor="@color/HeadText"
+                                    android:textSize="11sp"
+                                    android:layout_weight="0"/>
+                                <View
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"/>
+                                <TextView
+                                    android:id="@+id/buttonChangeDark"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="15dp"
+                                    android:text="更换"
+                                    android:layout_gravity="end|center"
+                                    android:textColor="@color/HeadText"
+                                    android:textSize="11sp"
+                                    android:layout_weight="0"/>
+                            </LinearLayout>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.cardview.widget.CardView>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardViewLight"
-                android:layout_width="match_parent"
-                android:layout_margin="13dp"
-
-                android:layout_height="70dp"
-                app:cardBackgroundColor="@color/CardBackground"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="15dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="start">
-
-                    <LinearLayout
+                    android:layout_weight="1">
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardViewLight"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:padding="10dp"
-                        >
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_height="match_parent"
-                            android:layout_gravity="center"
-                            android:layout_weight="0"
-                            >
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="top"
-                                android:text="浅色模式壁纸"
-                                android:textColor="@color/CardText"
-                                android:textSize="18sp" />
-                            <TextView
-                                android:id="@+id/text002"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="center_vertical"
-                                android:text="设置您的浅色模式壁纸"
-                                android:textColor="@color/CardText2"
-                                android:textSize="13sp" />
-
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="1dp"
-                            android:layout_weight="1"/>
-
-
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_margin="1dp"
-                            android:layout_weight="0"
-                            app:cardCornerRadius="8dp"
-                            app:cardElevation="2dp">
-
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="13dp"
+                        android:backgroundTint="@color/Background2"
+                        app:cardCornerRadius="15dp"
+                        app:cardElevation="5dp">
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:layout_weight="0"
                                 android:scaleType="centerCrop"
-                                android:src="@drawable/ic_notset" />
-
-
+                                android:src="@drawable/ic_notset"/>
                             <ImageView
                                 android:id="@+id/imageLight"
                                 android:layout_width="match_parent"
@@ -374,31 +240,41 @@
                                 android:layout_weight="0"
                                 android:scaleType="centerCrop"
                                 android:src="@drawable/ic_notset" />
-
-                            <View
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@color/CardCover" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/buttonChangeLight"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="更换"
-                                android:padding="1dp"
-                                android:textColor="@color/CardText3"
-                                android:background="#00000000"
-                                android:textSize="12sp"
-                                android:layout_gravity="center"
-                                app:cornerRadius="0dp"
-                                />
-
-                        </androidx.cardview.widget.CardView>
-
-
-                    </LinearLayout>
+                                android:layout_height="30dp"
+                                android:background="@color/Background2"
+                                app:layout_constraintBottom_toBottomOf="parent">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="浅色模式壁纸"
+                                    android:layout_gravity="center"
+                                    android:layout_marginStart="10dp"
+                                    android:textColor="@color/HeadText"
+                                    android:textSize="11sp"
+                                    android:layout_weight="0"/>
+                                <View
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"/>
+                                <TextView
+                                    android:id="@+id/buttonChangeLight"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="15dp"
+                                    android:text="更换"
+                                    android:layout_gravity="end|center"
+                                    android:textColor="@color/HeadText"
+                                    android:textSize="11sp"
+                                    android:layout_weight="0"/>
+                            </LinearLayout>
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.cardview.widget.CardView>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- 按钮区 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -464,6 +340,7 @@
                     android:text="设置微动量"
                     />
             </LinearLayout>
+            <!-- Compose -->
             <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/compose1"
                 android:layout_width="match_parent"
