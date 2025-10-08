@@ -39,7 +39,7 @@ class DarkModePure : AppCompatActivity() {
         //错误提示:点击跳转至壁纸设置页
         val noticeCard = findViewById<CardView>(R.id.noticeCard)
         noticeCard.setOnClickListener {
-            val intent = Intent(this, DarkMode::class.java)
+            val intent = Intent(this, DarkModeActivity::class.java)
             startActivity(intent)
         }
 

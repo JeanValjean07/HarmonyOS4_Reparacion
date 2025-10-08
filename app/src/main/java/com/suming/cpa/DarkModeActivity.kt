@@ -70,7 +70,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 @Suppress("LocalVariableName")
-class DarkMode: AppCompatActivity() {
+class DarkModeActivity: AppCompatActivity() {
     //数值设置区
     private lateinit var Switch1: SwitchCompat
     private lateinit var Switch2: SwitchCompat
@@ -104,6 +104,13 @@ class DarkMode: AppCompatActivity() {
         NoticeCard.setOnClickListener {
             NoticeCard.visibility = View.GONE
         }
+        //开关：为深色或浅色模式分别设置壁纸
+        val SignDarkMode = findViewById<ImageView>(R.id.sign_dark_mode)
+        SignDarkMode.setOnClickListener {
+            notice("哼,哼,啊啊啊啊啊啊啊",1000)
+        }
+
+
 
         //开关：将选择的壁纸保存到外部
         Switch1 = findViewById(R.id.switchToGallery)
@@ -538,7 +545,7 @@ class DarkMode: AppCompatActivity() {
                     val file = File(fileDir, fileName)
                     if (file.exists()) {
                         val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        val wallpaperManager = WallpaperManager.getInstance(this@DarkMode)
+                        val wallpaperManager = WallpaperManager.getInstance(this@DarkModeActivity)
                         wallpaperManager.setBitmap(
                             bitmap, null, false,
                             WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
@@ -595,7 +602,7 @@ class DarkMode: AppCompatActivity() {
                     val file = File(fileDir, fileName)
                     if (file.exists()) {
                         val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        val wallpaperManager = WallpaperManager.getInstance(this@DarkMode)
+                        val wallpaperManager = WallpaperManager.getInstance(this@DarkModeActivity)
                         wallpaperManager.setBitmap(
                             bitmap, null, false,
                             WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK

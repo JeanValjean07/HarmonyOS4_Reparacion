@@ -22,26 +22,34 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:background="@android:color/transparent"
-            android:elevation="10dp">
-            <ImageButton
-                android:id="@+id/buttonExit"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_gravity="start"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="返回上一级页面"
-                android:padding="8dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_go_back_2" />
-            <TextView
-                android:id="@+id/toolbar_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start|center"
-                android:padding="8dp"
-                android:text="关于"
-                android:textColor="@color/HeadText"
-                android:textSize="20sp" />
+            app:contentInsetStart="0dp"
+            android:elevation="1dp">
+            <!-- AppBar# -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+                <ImageButton
+                    android:id="@+id/buttonExit"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="start|center"
+                    android:layout_marginStart="5dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="退出"
+                    android:padding="11dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_go_back_2"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="start|center"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:text="关于"
+                    android:textColor="@color/HeadText"
+                    android:textSize="20sp" />
+            </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
     <!-- 滚动区域 -->
@@ -53,14 +61,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
             <!-- 版本卡片 -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="5dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="2dp"
                 android:layout_height="match_parent"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="5dp">

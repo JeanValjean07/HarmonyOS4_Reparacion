@@ -38,7 +38,7 @@
         </activity>
 
         <!-- 深色模式壁纸 -->
-        <activity android:name=".DarkMode"
+        <activity android:name=".DarkModeActivity"
             android:exported="true"/>
 
         <!-- 切换模式纯净版 -->
@@ -48,7 +48,7 @@
             android:exported="true"/>
 
         <!-- 亮度控制器 -->
-        <activity android:name=".BackgroundCheck"
+        <activity android:name=".BackgroundCheckActivity"
             android:exported="true"/>
 
         <!-- 通知控制 -->
@@ -56,11 +56,11 @@
             android:exported="true"/>
 
         <!-- 引导 -->
-        <activity android:name=".Guidance"
+        <activity android:name=".GuidanceActivity"
             android:exported="true"/>
 
         <!-- 设置 -->
-        <activity android:name=".Settings"
+        <activity android:name=".SettingsActivity"
             android:exported="true"/>
 
         <!-- 关于 -->

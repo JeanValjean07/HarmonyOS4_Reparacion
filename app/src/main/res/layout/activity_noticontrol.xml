@@ -24,24 +24,23 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal">
-            <!-- 退出按钮 -->
             <ImageButton
                 android:id="@+id/buttonToolbarExit"
-                android:layout_width="28dp"
+                android:layout_width="50dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="25dp"
-                android:layout_marginBottom="6dp"
+                android:layout_gravity="start|center"
+                android:layout_marginStart="5dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="退出"
+                android:padding="11dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_go_back_2"/>
-            <!-- 标题:通知管理 -->
             <TextView
-                android:id="@+id/toolbar_title"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_gravity="center_vertical"
-                android:padding="8dp"
+                android:layout_gravity="start|center"
+                android:gravity="center"
+                android:padding="5dp"
                 android:text="通知管理"
                 android:textColor="@color/HeadText"
                 android:textSize="20sp" />
@@ -72,203 +71,133 @@
                 android:textColor="@color/ButtonText"
                 android:textSize="15sp" />
         </LinearLayout>
+        <!-- 描述 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_marginEnd="11dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="6dp"
+            app:cardCornerRadius="13dp"
+            app:cardElevation="4dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+                <ImageView
+                    android:id="@+id/sign_noti_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_notification"
+                    android:contentDescription="壁纸"
+                    android:layout_gravity="center"
+                    android:scaleType="fitCenter" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="在华为系统上进入原生通知管理页面"
+                    android:layout_marginStart="9dp"
+                    android:textSize="13sp"
+                    android:textColor="@color/HeadText"
+                    tools:ignore="NestedWeights"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
         <!-- 固定卡片:通知访问权限 -->
-        <LinearLayout
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_view"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_marginEnd="11dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="13dp"
+            app:cardElevation="4dp">
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_marginStart="11dp"
-                android:layout_marginEnd="11dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="6dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-                <LinearLayout
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:id="@+id/buttonNotiListenerText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="通知访问权限"
+                    android:textSize="13sp"
+                    android:textColor="@color/HeadText"
+                    android:layout_weight="0"
+                    tools:ignore="NestedWeights"/>
+                <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp">
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:layout_margin="3dp"
-                        android:layout_weight="0">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="通知访问权限"
-                            android:textSize="19sp"
-                            android:textColor="@color/HeadText"
-                            android:layout_weight="0"
-                            tools:ignore="NestedWeights"/>
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"/>
-                        <TextView
-                            android:id="@+id/textA2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="\????????????????????"
-                            android:textSize="14sp"
-                            android:layout_weight="0"
-                            android:textColor="@color/HeadText" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        />
-
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="47dp"
-                        android:layout_height="match_parent"
-                        app:cardCornerRadius="9dp"
-                        android:layout_margin="4dp"
-                        android:elevation="4dp"
-                        android:layout_weight="0">
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_weight="0"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_notset" />
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@color/CardCover" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/buttonLetsOpenIt"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="\????"
-                            android:padding="1dp"
-                            android:textColor="@color/CardText3"
-                            android:background="#00000000"
-                            android:textSize="12sp"
-                            android:layout_gravity="center"
-                            app:cornerRadius="0dp"
-                            />
-
-                    </androidx.cardview.widget.CardView>
-
-
-
-
-
-
-
-
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
+                    android:layout_weight="1"
+                    />
+                <TextView
+                    android:id="@+id/buttonOpenNotiListener"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="去开启"
+                    android:textSize="13sp"
+                    android:textColor="@color/HeadText"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="0"
+                    tools:ignore="NestedWeights"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
         <!-- 固定卡片:搜索目标应用 -->
-        <LinearLayout
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="85dp">
-            <androidx.cardview.widget.CardView
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_marginEnd="11dp"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
+            app:cardCornerRadius="13dp"
+            app:cardElevation="4dp">
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_marginStart="11dp"
-                android:layout_marginEnd="11dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="6dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-                <LinearLayout
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="直接搜索目标应用"
+                    android:textSize="13sp"
+                    android:textColor="@color/HeadText"
+                    android:layout_weight="0"
+                    tools:ignore="NestedWeights"/>
+                <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp">
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:layout_margin="3dp"
-                        android:layout_weight="0">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="搜索目标应用"
-                            android:textSize="19sp"
-                            android:textColor="@color/HeadText"
-                            android:layout_weight="0"
-                            tools:ignore="NestedWeights" />
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            />
+                    android:layout_weight="1"
+                    />
+                <TextView
+                    android:id="@+id/buttonSearchApp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="前往"
+                    android:textSize="13sp"
+                    android:textColor="@color/HeadText"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="0"
+                    tools:ignore="NestedWeights"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-                        <TextView
-
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="直接搜索目标应用并关闭其通知"
-                            android:textSize="14sp"
-                            android:layout_weight="0"
-                            android:textColor="@color/HeadText"
-                            />
-
-
-                    </LinearLayout>
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"/>
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="47dp"
-                        android:layout_height="match_parent"
-                        app:cardCornerRadius="9dp"
-                        android:layout_margin="4dp"
-                        android:elevation="4dp"
-                        android:layout_weight="0">
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_weight="0"
-                            android:contentDescription="background"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_notset" />
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@color/CardCover"/>
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/buttonAppList"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="去搜索"
-                            android:padding="1dp"
-                            android:textColor="@color/CardText3"
-                            android:background="#00000000"
-                            android:textSize="12sp"
-                            android:layout_gravity="center"
-                            app:cornerRadius="0dp"
-                            />
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
     <!-- NoticeCard -->
     <androidx.cardview.widget.CardView

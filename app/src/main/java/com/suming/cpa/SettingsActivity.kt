@@ -27,7 +27,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class Settings : AppCompatActivity() {
+class SettingsActivity : AppCompatActivity() {
 
     private lateinit var Switch0: SwitchCompat
     private lateinit var Switch1: SwitchCompat
@@ -81,7 +81,7 @@ class Settings : AppCompatActivity() {
 
 
         //按钮：关于/更新
-        val buttonAbout = findViewById<Button>(R.id.buttonAbout)
+        val buttonAbout = findViewById<TextView>(R.id.buttonAbout)
         buttonAbout.setOnClickListener {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)
@@ -112,8 +112,6 @@ class Settings : AppCompatActivity() {
                 imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
             }
         }
-
-
 
 
 

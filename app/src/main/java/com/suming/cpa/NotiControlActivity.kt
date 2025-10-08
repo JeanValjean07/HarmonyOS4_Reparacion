@@ -76,6 +76,8 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
     private var count=0
     private lateinit var receiver: Receiver
 
+    private var showGuidance = 0
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,12 +155,12 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
 
 
         //按钮：开启通知访问权限
-        val ButtonOpenNotiListener = findViewById<Button>(R.id.buttonLetsOpenIt)
+        val ButtonOpenNotiListener = findViewById<TextView>(R.id.buttonOpenNotiListener)
         ButtonOpenNotiListener.setOnClickListener {
             goNotiSetting()
         }
         //按钮：搜索应用关闭
-        val ButtonAppList = findViewById<Button>(R.id.buttonAppList)
+        val ButtonAppList = findViewById<TextView>(R.id.buttonSearchApp)
         ButtonAppList.setOnClickListener {
             notice("该功能完善中", 5000)
             return@setOnClickListener
@@ -175,7 +177,6 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
     //Functions
     override fun onNotificationReceived(packageName: String, title: String, content: String) {
         moveContent(packageName,title, content)
-
     }
 
     private fun moveContent(packageName: String, title: String, content: String) {
@@ -200,17 +201,12 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
     fun ClickableItem(row: List<String>){
         val context = LocalContext.current
 
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(7.dp)
-                .clickable {
+        Column(modifier = Modifier.fillMaxWidth().padding(7.dp).clickable {
                     val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                         .putExtra(Settings.EXTRA_APP_PACKAGE, row[2])
                     context.startActivity(intent)
-                }
-        ){
+                })
+        {
             var isVisible by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) {
                 isVisible = true
@@ -218,43 +214,37 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(animationSpec = tween(durationMillis = 300))
-            ) {
-            Text(
-                text = "${row[1]} ${row[3]}\n${row[4]}",
-                style = TextStyle(fontSize = 14.sp),
-                color = colorResource(id = R.color.HeadText),
-            )
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                thickness = 1.dp,
-                color = colorResource(id = R.color.HeadText)
-            )
+            ){
+                Text(
+                    text = "${row[1]} ${row[3]}\n${row[4]}",
+                    style = TextStyle(fontSize = 14.sp),
+                    color = colorResource(id = R.color.HeadText),
+                )
+                HorizontalDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    thickness = 1.dp,
+                    color = colorResource(id = R.color.HeadText)
+                )
             }
         }
     }
 
     private fun showContent() {
         val composeNotice = findViewById<ComposeView>(R.id.composeNotices)
-        composeNotice.setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize()
-                    .heightIn(max = 50000.dp, min = 160.dp)
-            ) {
+        var minHeight = 160.dp
+        if (showGuidance == 0){
+            minHeight = 500.dp
+        }
 
-                LazyColumn(
-                    modifier = Modifier
+        composeNotice.setContent {
+            Box(modifier = Modifier.fillMaxWidth().animateContentSize().heightIn(max = 50000.dp, min = minHeight))
+            {
+                LazyColumn(modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 50000.dp, min = 160.dp)
-                        .padding(13.dp)
+                        .heightIn(max = 50000.dp, min = minHeight)
+                        .padding(10.dp,2.dp,10.dp,10.dp)
                         .background(colorResource(id = R.color.HeadBackground))
-                        .border(
-                            2.dp,
-                            colorResource(id = R.color.HeadText),
-                            RoundedCornerShape(20.dp)
-                        )
+                        .border(1.dp, colorResource(id = R.color.HeadText), RoundedCornerShape(15.dp))
                 )
                 {
                     if (NotiList.isEmpty()) {
@@ -348,18 +338,13 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
         val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(this)
         val isNotificationListenerEnabled = enabledListenerPackages.contains(packageName)
         if(isNotificationListenerEnabled){
-
-            val textA2 = findViewById<TextView>(R.id.textA2)
-            textA2.text = "已开启通知访问权限,使用后建议关闭"
-
-            val button1 = findViewById<Button>(R.id.buttonLetsOpenIt)
-            button1.text = "去关闭"
+            val ButtonOpenNotiListener = findViewById<TextView>(R.id.buttonOpenNotiListener)
+            ButtonOpenNotiListener.text = "去关闭"
+            val ButtonNotiListenerText = findViewById<TextView>(R.id.buttonNotiListenerText)
+            ButtonNotiListenerText.text = "通知访问权限：已开启"
         } else{
-            val textA2 = findViewById<TextView>(R.id.textA2)
-            textA2.text = "开启通知访问权限以读取通知信息"
-
-            val button1 = findViewById<Button>(R.id.buttonLetsOpenIt)
-            button1.text = "去开启"
+            val ButtonNotiListenerText = findViewById<TextView>(R.id.buttonNotiListenerText)
+            ButtonNotiListenerText.text = "通知访问权限：未开启"
         }
         //申请通知权限
         val channelId = "refresh"
@@ -374,7 +359,7 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
         notificationManager.createNotificationChannel(channel)
         //读取设置
         val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        val showGuidance = sharedPreferences.getInt("showGuidance", 0)
+        showGuidance = sharedPreferences.getInt("showGuidance", 0)
         val showGuidanceAnimation = sharedPreferences.getInt("showGuidanceAnimation", 0)
         //活动功能介绍
         if (showGuidance == 1){
@@ -400,13 +385,10 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(13.dp)
+                            .heightIn(max = 50000.dp, min = 160.dp)
+                            .padding(10.dp,2.dp,10.dp,10.dp)
                             .background(colorResource(id = R.color.HeadBackground))
-                            .border(
-                                2.dp,
-                                colorResource(id = R.color.HeadText),
-                                RoundedCornerShape(20.dp)
-                            )
+                            .border(1.dp, colorResource(id = R.color.HeadText), RoundedCornerShape(15.dp))
                             .padding(16.dp)
                     )
 

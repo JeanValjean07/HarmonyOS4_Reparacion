@@ -42,20 +42,20 @@ class MainActivity : AppCompatActivity() {
         //按钮：Toolbar设置
         val ButtonSetting = findViewById<Button>(R.id.buttonSetting)
         ButtonSetting.setOnClickListener {
-            val intent = Intent(this, Settings::class.java)
+            val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
         //按钮：Toolbar指南
         val ButtonGuidance = findViewById<Button>(R.id.buttonGuidance)
         ButtonGuidance.setOnClickListener {
-            val intent = Intent(this, Guidance::class.java)
+            val intent = Intent(this, GuidanceActivity::class.java)
             startActivity(intent)
         }
 
         //按钮：深色模式壁纸
         val ButtonWallpaper = findViewById<Button>(R.id.buttonSwitchDark)
         ButtonWallpaper.setOnClickListener {
-            val intent = Intent(this, DarkMode::class.java)
+            val intent = Intent(this, DarkModeActivity::class.java)
             startActivity(intent)
         }
         //按钮：通知管理
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         //按钮：后台管理
         val ButtonBackgroundCheck = findViewById<Button>(R.id.buttonBrightnessController)
         ButtonBackgroundCheck.setOnClickListener {
-            val intent = Intent(this, BackgroundCheck::class.java)
+            val intent = Intent(this, BackgroundCheckActivity::class.java)
             startActivity(intent)
         }
 
