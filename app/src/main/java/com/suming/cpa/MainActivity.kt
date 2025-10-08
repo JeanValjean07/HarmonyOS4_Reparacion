@@ -64,12 +64,22 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, NotiControl::class.java)
             startActivity(intent)
         }
+        //按钮：桌面时钟
+
+
+
+
+
+        //不显示的按钮
         //按钮：后台管理
         val ButtonBackgroundCheck = findViewById<Button>(R.id.buttonBrightnessController)
+        ButtonBackgroundCheck.visibility = Button.GONE
         ButtonBackgroundCheck.setOnClickListener {
             val intent = Intent(this, BackgroundCheckActivity::class.java)
             startActivity(intent)
         }
+
+
 
 
 
