@@ -69,6 +69,7 @@ interface ReceiverCallback {
     fun onNotificationReceived(packageName:String, title:String, content: String)
 }
 
+@Suppress("LocalVariableName")
 class NotiControl: AppCompatActivity(), ReceiverCallback {
 
     private val NotiList = mutableStateListOf<MutableList<String>>()
@@ -111,14 +112,14 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)
 
 
-        //按钮：返回
-        val buttonT1 = findViewById<ImageButton>(R.id.buttonToolbarExit)
-        buttonT1.setOnClickListener {
+        //按钮：返回上级
+        val ButtonExit = findViewById<ImageButton>(R.id.buttonToolbarExit)
+        ButtonExit.setOnClickListener {
             finish()
         }
         //按钮：立即刷新
-        val buttonT2 = findViewById<Button>(R.id.buttonRead)
-        buttonT2.setOnClickListener {
+        val ButtonRefresh = findViewById<Button>(R.id.buttonRead)
+        ButtonRefresh.setOnClickListener {
             val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(this)
             val isNotificationListenerEnabled = enabledListenerPackages.contains(packageName)
             if (!isNotificationListenerEnabled) {
@@ -139,21 +140,26 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
             }
         }
         //按钮：清空列表
-        val buttonT3 = findViewById<Button>(R.id.buttonClear)
-        buttonT3.setOnClickListener {
+        val ButtonClear = findViewById<Button>(R.id.buttonClear)
+        ButtonClear.setOnClickListener {
             NotiList.clear()
             count=0
+        }
+        //Notice卡片点击时关闭
+        val NoticeCard = findViewById<CardView>(R.id.noticeCard)
+        NoticeCard.setOnClickListener {
+            NoticeCard.visibility = View.GONE
         }
 
 
         //按钮：开启通知访问权限
-        val button1 = findViewById<Button>(R.id.buttonLetsOpenIt)
-        button1.setOnClickListener {
+        val ButtonOpenNotiListener = findViewById<Button>(R.id.buttonLetsOpenIt)
+        ButtonOpenNotiListener.setOnClickListener {
             goNotiSetting()
         }
         //按钮：搜索应用关闭
-        val button2 = findViewById<Button>(R.id.buttonAppList)
-        button2.setOnClickListener {
+        val ButtonAppList = findViewById<Button>(R.id.buttonAppList)
+        ButtonAppList.setOnClickListener {
             notice("该功能完善中", 5000)
             return@setOnClickListener
         }

@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|top"
-        app:cardElevation="10dp"
+        app:cardElevation="8dp"
         app:cardCornerRadius="50dp"
         android:backgroundTint="@color/Background"
         app:layout_constraintTop_toTopOf="parent"
@@ -46,8 +46,7 @@
             android:paddingRight="10dp"
             android:text="动态提示文本区域"
             android:textColor="@color/HeadText"
-            android:textSize="12sp"
-            />
+            android:textSize="12sp"/>
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

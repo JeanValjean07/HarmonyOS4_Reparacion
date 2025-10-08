@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
+@Suppress("LocalVariableName")
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,8 +27,8 @@ class MainActivity : AppCompatActivity() {
 
 
         //按钮：Toolbar退出（自杀）
-        val buttonT1 = findViewById<Button>(R.id.buttonExit)
-        buttonT1.setOnClickListener {
+        val ButtonExit = findViewById<Button>(R.id.buttonExit)
+        ButtonExit.setOnClickListener {
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_HOME)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -40,33 +40,33 @@ class MainActivity : AppCompatActivity() {
             android.os.Process.killProcess(pid)
         }
         //按钮：Toolbar设置
-        val buttonT2 = findViewById<Button>(R.id.buttonSetting)
-        buttonT2.setOnClickListener {
+        val ButtonSetting = findViewById<Button>(R.id.buttonSetting)
+        ButtonSetting.setOnClickListener {
             val intent = Intent(this, Settings::class.java)
             startActivity(intent)
         }
         //按钮：Toolbar指南
-        val buttonT3 = findViewById<Button>(R.id.buttonGuidance)
-        buttonT3.setOnClickListener {
+        val ButtonGuidance = findViewById<Button>(R.id.buttonGuidance)
+        ButtonGuidance.setOnClickListener {
             val intent = Intent(this, Guidance::class.java)
             startActivity(intent)
         }
 
         //按钮：深色模式壁纸
-        val button6 = findViewById<Button>(R.id.buttonSwitchDark)
-        button6.setOnClickListener {
+        val ButtonWallpaper = findViewById<Button>(R.id.buttonSwitchDark)
+        ButtonWallpaper.setOnClickListener {
             val intent = Intent(this, DarkMode::class.java)
             startActivity(intent)
         }
         //按钮：通知管理
-        val button7=findViewById<Button>(R.id.buttonNotiController)
-        button7.setOnClickListener {
+        val ButtonNotiController = findViewById<Button>(R.id.buttonNotiController)
+        ButtonNotiController.setOnClickListener {
             val intent = Intent(this, NotiControl::class.java)
             startActivity(intent)
         }
-        //按钮：亮度管理
-        val button8=findViewById<Button>(R.id.buttonBrightnessController)
-        button8.setOnClickListener {
+        //按钮：后台管理
+        val ButtonBackgroundCheck = findViewById<Button>(R.id.buttonBrightnessController)
+        ButtonBackgroundCheck.setOnClickListener {
             val intent = Intent(this, BackgroundCheck::class.java)
             startActivity(intent)
         }

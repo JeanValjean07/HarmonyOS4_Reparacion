@@ -97,7 +97,13 @@ class DarkMode: AppCompatActivity() {
         //按钮：toolbar返回上级
         val ButtonExit = findViewById<ImageButton>(R.id.buttonToolbarExit)
         ButtonExit.setOnClickListener {
-            finish() }
+            finish()
+        }
+        //Notice卡片点击时关闭
+        val NoticeCard = findViewById<CardView>(R.id.noticeCard)
+        NoticeCard.setOnClickListener {
+            NoticeCard.visibility = View.GONE
+        }
 
         //开关：将选择的壁纸保存到外部
         Switch1 = findViewById(R.id.switchToGallery)
@@ -119,8 +125,8 @@ class DarkMode: AppCompatActivity() {
 
         //主区域按钮
         //按钮：选择/更改深色壁纸
-        val buttonM1 = findViewById<Button>(R.id.buttonChangeDark)
-        buttonM1.setOnClickListener {
+        val ButtonSelectDarkWp = findViewById<Button>(R.id.buttonChangeDark)
+        ButtonSelectDarkWp.setOnClickListener {
             val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
             sharedPreferences.edit {
                 putString("whatmode?", "dark")
@@ -129,8 +135,8 @@ class DarkMode: AppCompatActivity() {
             openGallery()
         }
         //按钮：选择/更改浅色壁纸
-        val buttonM2 = findViewById<Button>(R.id.buttonChangeLight)
-        buttonM2.setOnClickListener {
+        val ButtonSelectLightWp = findViewById<Button>(R.id.buttonChangeLight)
+        ButtonSelectLightWp.setOnClickListener {
             val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
             sharedPreferences.edit {
                 putString("whatmode?", "light")
@@ -139,27 +145,27 @@ class DarkMode: AppCompatActivity() {
             openGallery()
         }
         //按钮：返回桌面
-        val buttonM3 = findViewById<Button>(R.id.buttonSuperExit)
-        buttonM3.setOnClickListener {
+        val ButtonSuperExit = findViewById<Button>(R.id.buttonSuperExit)
+        ButtonSuperExit.setOnClickListener {
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_HOME)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
             exit(100)
         }
-        //按钮：切换深色
-        val buttonM4 = findViewById<Button>(R.id.buttonSwitchDark)
-        buttonM4.setOnClickListener {
+        //按钮：切换深色壁纸
+        val ButtonSwitchDark = findViewById<Button>(R.id.buttonSwitchDark)
+        ButtonSwitchDark.setOnClickListener {
             switchNow("dark")
         }
-        //按钮：切换浅色
-        val buttonM5 = findViewById<Button>(R.id.buttonSwitchLight)
-        buttonM5.setOnClickListener {
+        //按钮：切换浅色壁纸
+        val ButtonSwitchLight = findViewById<Button>(R.id.buttonSwitchLight)
+        ButtonSwitchLight.setOnClickListener {
             switchNow("light")
         }
         //按钮：添加快捷方式
-        val buttonM6 = findViewById<Button>(R.id.buttonAddTile)
-        buttonM6.setOnClickListener {
+        val ButtonAddTile = findViewById<Button>(R.id.buttonAddTile)
+        ButtonAddTile.setOnClickListener {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastClickTime < COOLDOWN_TIME_2) {
                 return@setOnClickListener
@@ -171,14 +177,14 @@ class DarkMode: AppCompatActivity() {
 
         }
         //按钮：清除壁纸
-        val buttonM7 = findViewById<Button>(R.id.buttonClear)
-        buttonM7.setOnClickListener {
+        val ButtonClearWp = findViewById<Button>(R.id.buttonClear)
+        ButtonClearWp.setOnClickListener {
             clearWallPaper()
             notice("已清除",2000)
         }
         //按钮：设置微动值
-        val buttonM8=findViewById<Button>(R.id.buttonSetValue)
-        buttonM8.setOnClickListener() {
+        val ButtonSetValue = findViewById<Button>(R.id.buttonSetValue)
+        ButtonSetValue.setOnClickListener() {
             val dialog = Dialog(this)
             val dialogView = LayoutInflater.from(this).inflate(R.layout.activity_dark_mode_settings, null)
             dialog.setContentView(dialogView)

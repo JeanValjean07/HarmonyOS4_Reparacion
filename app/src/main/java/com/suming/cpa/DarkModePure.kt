@@ -1,6 +1,8 @@
 package com.suming.cpa
 
 import android.app.WallpaperManager
+import android.content.Intent
+
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
@@ -22,24 +24,26 @@ class DarkModePure : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_dark_pure)
 
+
         if (intent.getBooleanExtra("FROM_TILE", false)) {
-            fromTile()
-            lifecycleScope.launch {
-                delay(1000)
-                finish()
-            }
+            startFromTile()
         }
 
         if (intent.getBooleanExtra("FROM_HOME",false)){
-            lifecycleScope.launch { delay(500) }
-            fromHome()
-
+            startFromHome()
         }
+
+        val noticeCard = findViewById<CardView>(R.id.noticeCard)
+        noticeCard.setOnClickListener {
+            val intent = Intent(this, DarkMode::class.java)
+            startActivity(intent)
+        }
+
 
     }//onCreate END
 
     //Functions
-    private fun setDark() {
+    private fun setDarkWallpaper() {
         val wallpaperManager = WallpaperManager.getInstance(this)
         val bitmap =
             BitmapFactory.decodeFile("$filesDir/images/selected_image_dark.jpg")
@@ -47,17 +51,17 @@ class DarkModePure : AppCompatActivity() {
             WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
     }
 
-    private fun setLight() {
+    private fun setLightWallpaper() {
         val wallpaperManager = WallpaperManager.getInstance(this)
         val bitmap = BitmapFactory.decodeFile("$filesDir/images/selected_image_light.jpg")
         wallpaperManager.setBitmap(bitmap, null, false,
             WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
     }
 
-    private fun fromHome(){
+    private fun startFromHome(){
         val sharedPreferences=getSharedPreferences("app_prefs", MODE_PRIVATE)
         if(!sharedPreferences.contains("is_dark_wallpaper_set?") || !sharedPreferences.contains("is_light_wallpaper_set?")){
-            notice("您没有设置完全部两张壁纸,请先设置", 11000)
+            notice("您没有设置完全部两张壁纸,请先设置")
             val switching = findViewById<TextView>(R.id.switching)
             switching.text="无法切换"
             return
@@ -66,10 +70,10 @@ class DarkModePure : AppCompatActivity() {
         val nightModeFlags = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
         when (nightModeFlags) {
             android.content.res.Configuration.UI_MODE_NIGHT_YES -> {
-                setDark()
+                setDarkWallpaper()
             }
             android.content.res.Configuration.UI_MODE_NIGHT_NO -> {
-                setLight()
+                setLightWallpaper()
             }
         }
         lifecycleScope.launch {
@@ -78,10 +82,10 @@ class DarkModePure : AppCompatActivity() {
         }
     }
 
-    private fun fromTile() {
+    private fun startFromTile() {
         var sharedPreferences=getSharedPreferences("app_prefs", MODE_PRIVATE)
         if(!sharedPreferences.contains("is_dark_wallpaper_set?") || !sharedPreferences.contains("is_light_wallpaper_set?")){
-            notice("您没有设置完全部两张壁纸,切换失败", 10000)
+            notice("您没有设置完全部两张壁纸,切换失败")
             val switching = findViewById<TextView>(R.id.switching)
             switching.text="无法切换"
             return
@@ -89,27 +93,27 @@ class DarkModePure : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences("tile_prefs", MODE_PRIVATE)
         val isEnabled = sharedPreferences.getBoolean("isEnabled", true)
-        if (isEnabled) {
-            setDark()
-        } else {
-            setLight()
+        if (isEnabled) { setDarkWallpaper() } else { setLightWallpaper() }
+
+        lifecycleScope.launch {
+            delay(1000)
+            finish()
         }
     }
 
+
     private var showNoticeJob: Job? = null
-    private fun showNoticeJob(text: String, duration: Long) {
+    private fun showNoticeJob(text: String) {
         showNoticeJob?.cancel()
         showNoticeJob = lifecycleScope.launch {
             val notice = findViewById<TextView>(R.id.notice)
             val noticeCard = findViewById<CardView>(R.id.noticeCard)
             noticeCard.visibility = View.VISIBLE
             notice.text = text
-            delay(duration)
-            noticeCard.visibility = View.GONE
         }
     }
-    private fun notice(text: String, duration: Long) {
-        showNoticeJob(text, duration)
+    private fun notice(text: String) {
+        showNoticeJob(text)
     }
 
 }
