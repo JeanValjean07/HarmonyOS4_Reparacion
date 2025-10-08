@@ -1,11 +1,11 @@
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
-
-
+    android:padding="24dp"
+    tools:ignore="HardcodedText">
 
     <TextView
         android:id="@+id/dialog_title"
@@ -17,25 +17,25 @@
         android:gravity="center"
         android:padding="6dp" />
 
-        <TextView
-            android:id="@+id/dialog_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="壁纸上下被裁剪的像素高度"
-            android:textSize="10sp"
-            android:padding="4dp" />
-
+    <TextView
+        android:id="@+id/dialog_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="壁纸上下被裁剪的像素高度"
+        android:textSize="10sp"
+        android:padding="4dp"
+        tools:ignore="SmallSp" />
 
     <EditText
         android:id="@+id/dialog_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints="android:autofillHints"
         android:hint="(单位:像素个数丨默认50最大200)"
         android:textSize="14sp"
         android:inputType="number"
         android:maxLength="3"
         />
-
 
     <Button
         android:id="@+id/dialog_button"
@@ -46,6 +46,5 @@
         android:layout_gravity="center"
         android:text="确定"
         />
-
 
 </LinearLayout>

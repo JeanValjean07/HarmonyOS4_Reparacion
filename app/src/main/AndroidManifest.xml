@@ -48,7 +48,7 @@
             android:exported="true"/>
 
         <!-- 亮度控制器 -->
-        <activity android:name=".BrightnessController"
+        <activity android:name=".BackgroundCheck"
             android:exported="true"/>
 
         <!-- 通知控制 -->

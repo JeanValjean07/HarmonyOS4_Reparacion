@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         //按钮：亮度管理
         val button8=findViewById<Button>(R.id.buttonBrightnessController)
         button8.setOnClickListener {
-            val intent = Intent(this, BrightnessController::class.java)
+            val intent = Intent(this, BackgroundCheck::class.java)
             startActivity(intent)
         }
 
