@@ -80,7 +80,11 @@ class DarkModeActivity: AppCompatActivity() {
     private var killWhenExit = 0
 
     //深色或浅色标志位
-    private var mode_pictureSelect = "114514"
+    private var mode_pictureSelect = ""
+
+    //点图遮罩标志位
+    private var DarkCoverShowing = false
+    private var LightCoverShowing = false
 
     @SuppressLint("MissingInflatedId", "InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -210,15 +214,22 @@ class DarkModeActivity: AppCompatActivity() {
         //按钮：立即设置（深色）（点击图片）
         val CardViewDark = findViewById<CardView>(R.id.cardViewDark)
         CardViewDark.setOnClickListener {
-            val ButtonSetDarkFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
-            ButtonSetDarkFrame.visibility = View.VISIBLE
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            if (sharedPreferences.contains("is_dark_wallpaper_set?")) {
-                val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
-                ButtonSetDark.text = "立即设置壁纸"
+            if (!DarkCoverShowing) {
+                DarkCoverShowing = true
+                val ButtonSetDarkFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
+                ButtonSetDarkFrame.visibility = View.VISIBLE
+                val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                if (sharedPreferences.contains("is_dark_wallpaper_set?")) {
+                    val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
+                    ButtonSetDark.text = "立即设置壁纸"
+                }else{
+                    val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
+                    ButtonSetDark.text = "立即选择图片"
+                }
             }else{
-                val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
-                ButtonSetDark.text = "立即选择图片"
+                DarkCoverShowing = false
+                val ButtonSetDarkFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
+                ButtonSetDarkFrame.visibility = View.GONE
             }
         }
         val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
@@ -233,16 +244,24 @@ class DarkModeActivity: AppCompatActivity() {
         //按钮：立即设置（浅色）（点击图片）
         val CardViewLight = findViewById<CardView>(R.id.cardViewLight)
         CardViewLight.setOnClickListener {
-            val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
-            ButtonSetLightFrame.visibility = View.VISIBLE
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            if (sharedPreferences.contains("is_light_wallpaper_set?")) {
-                val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
-                ButtonSetLight.text = "立即设置壁纸"
+            if (!LightCoverShowing){
+                LightCoverShowing = true
+                val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
+                ButtonSetLightFrame.visibility = View.VISIBLE
+                val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                if (sharedPreferences.contains("is_light_wallpaper_set?")) {
+                    val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
+                    ButtonSetLight.text = "立即设置壁纸"
+                }else{
+                    val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
+                    ButtonSetLight.text = "立即选择图片"
+                }
             }else{
-                val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
-                ButtonSetLight.text = "立即选择图片"
+                LightCoverShowing = false
+                val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
+                ButtonSetLightFrame.visibility = View.GONE
             }
+
         }
         val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
         ButtonSetLight.setOnClickListener {

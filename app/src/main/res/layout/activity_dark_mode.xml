@@ -117,6 +117,8 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_margin="11dp"
+                        android:textColor="@color/HeadText"
+                        android:textSize="13sp"
                         android:text="为深色或浅色模式分别设置壁纸"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -224,11 +226,13 @@
                             android:backgroundTint="@color/Background2"
                             app:cardCornerRadius="6dp"
                             app:cardElevation="5dp">
+
                             <ImageView
                                 android:id="@+id/imageDark"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:scaleType="centerCrop"/>
+                                android:scaleType="centerCrop" />
+
                             <FrameLayout
                                 android:id="@+id/buttonSetDarkFrame"
                                 android:layout_width="match_parent"
@@ -237,7 +241,7 @@
                                 <View
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:backgroundTint="@color/Background5"/>
+                                    android:background="@color/Background5"/>
                                 <TextView
                                     android:id="@+id/buttonSetDark"
                                     android:layout_width="wrap_content"
@@ -254,9 +258,7 @@
                             android:layout_height="30dp"
                             android:layout_marginBottom="10dp"
                             android:layout_marginStart="15dp"
-                            android:layout_marginEnd="5dp"
-                            android:background="@color/Background2"
-                            app:layout_constraintBottom_toBottomOf="parent">
+                            android:layout_marginEnd="5dp">
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -314,8 +316,7 @@
                                 <View
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:backgroundTint="@color/Background5"
-                                    tools:ignore="TooDeepLayout" />
+                                    android:background="@color/Background5" />
                                 <TextView
                                     android:id="@+id/buttonSetLight"
                                     android:layout_width="wrap_content"
@@ -332,9 +333,7 @@
                             android:layout_height="30dp"
                             android:layout_marginBottom="10dp"
                             android:layout_marginStart="5dp"
-                            android:layout_marginEnd="10dp"
-                            android:background="@color/Background2"
-                            app:layout_constraintBottom_toBottomOf="parent">
+                            android:layout_marginEnd="10dp">
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
