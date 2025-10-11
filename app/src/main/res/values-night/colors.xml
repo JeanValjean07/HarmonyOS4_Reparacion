@@ -13,6 +13,7 @@
     <color name="ButtonTextVeryHeavy">#FFFFFF</color>
     <color name="ButtonBg2">#FFD0B8F8</color>
     <color name="ButtonText2">#311B92</color>
+    <color name="Background5">#90212121</color>
 
     <color name="SwitchTrackOpen">#FAFAFA</color>
     <color name="SwitchThumbOpen">#FFFFFF</color>

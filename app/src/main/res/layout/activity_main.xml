@@ -87,6 +87,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="通知管理" />
+            <!-- 音量控制 -->
+            <Button
+                android:id="@+id/buttonVolumeController"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="音量控制" />
             <!-- 后台管理 -->
             <Button
                 android:id="@+id/buttonBrightnessController"

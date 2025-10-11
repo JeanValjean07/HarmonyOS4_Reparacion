@@ -5,10 +5,6 @@
 
 
 
-    <meta-data
-        android:name="com.huawei.messaging.default_notification_icon"
-        android:value="@drawable/ic_launcher_foreground"
-        />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
@@ -28,6 +24,13 @@
         android:supportsRtl="true"
         android:extractNativeLibs="true"
         android:theme="@style/MainTheme">
+
+        <!-- 控制中心磁铁 -->
+        <meta-data
+            android:name="com.huawei.messaging.default_notification_icon"
+            android:value="@drawable/ic_launcher_foreground"/>
+
+        <!-- 主页 -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -47,15 +50,21 @@
             android:theme="@style/DarkModePureTheme"
             android:exported="true"/>
 
-        <!-- 亮度控制器 -->
+        <!-- 后台检查 -->
         <activity android:name=".BackgroundCheckActivity"
             android:exported="true"/>
+
+        <!-- 音量控制 -->
+        <activity android:name=".VolumeControl"
+            android:exported="true"/>
+
+
 
         <!-- 通知控制 -->
         <activity android:name=".NotiControl"
             android:exported="true"/>
 
-        <!-- 引导 -->
+        <!-- 指南和帮助 -->
         <activity android:name=".GuidanceActivity"
             android:exported="true"/>
 
@@ -79,13 +88,12 @@
             android:exported="true"
             tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
 
-
-        <!-- 服务：控制中心Tile -->
+        <!-- 服务：控制中心磁贴:深色壁纸 -->
         <service
             android:name="com.suming.cpa.DarkModeTileService"
             android:exported="true"
             android:label="深色壁纸"
-            android:icon="@drawable/ic_launcher_foreground"
+            android:icon="@drawable/ic_tile_dark_mode"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
@@ -93,9 +101,25 @@
             <meta-data
                 android:resource="@xml/my_tile"
                 android:name="huawei.theme.accent_support"
-                android:value="true"
-                />
+                android:value="true" />
         </service>
+
+        <!-- 服务：控制中心磁贴:音量面板 -->
+        <service
+            android:name="com.suming.cpa.VolumeTileService"
+            android:exported="true"
+            android:label="音量面板"
+            android:icon="@drawable/ic_tile_volume"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:resource="@xml/my_tile"
+                android:name="huawei.theme.accent_support"
+                android:value="true" />
+        </service>
+
         <!-- 服务：通知监听 -->
         <service android:name=".NotiService"
             android:exported="true"

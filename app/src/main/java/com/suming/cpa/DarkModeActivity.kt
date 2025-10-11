@@ -22,6 +22,7 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -78,6 +79,9 @@ class DarkModeActivity: AppCompatActivity() {
     private var lastClickTime: Long = 0
     private var killWhenExit = 0
 
+    //深色或浅色标志位
+    private var mode_pictureSelect = "114514"
+
     @SuppressLint("MissingInflatedId", "InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,7 +108,7 @@ class DarkModeActivity: AppCompatActivity() {
         NoticeCard.setOnClickListener {
             NoticeCard.visibility = View.GONE
         }
-        //开关：为深色或浅色模式分别设置壁纸
+        //点击彩蛋
         val SignDarkMode = findViewById<ImageView>(R.id.sign_dark_mode)
         SignDarkMode.setOnClickListener {
             notice("哼,哼,啊啊啊啊啊啊啊",1000)
@@ -134,21 +138,13 @@ class DarkModeActivity: AppCompatActivity() {
         //按钮：选择/更改深色壁纸
         val ButtonSelectDarkWp = findViewById<TextView>(R.id.buttonChangeDark)
         ButtonSelectDarkWp.setOnClickListener {
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            sharedPreferences.edit {
-                putString("whatmode?", "dark")
-                apply()
-            }
+            mode_pictureSelect = "dark"
             openGallery()
         }
         //按钮：选择/更改浅色壁纸
         val ButtonSelectLightWp = findViewById<TextView>(R.id.buttonChangeLight)
         ButtonSelectLightWp.setOnClickListener {
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            sharedPreferences.edit {
-                putString("whatmode?", "light")
-                apply()
-            }
+            mode_pictureSelect = "light"
             openGallery()
         }
         //按钮：返回桌面
@@ -211,8 +207,63 @@ class DarkModeActivity: AppCompatActivity() {
             }
 
         }
+        //按钮：立即设置（深色）（点击图片）
+        val CardViewDark = findViewById<CardView>(R.id.cardViewDark)
+        CardViewDark.setOnClickListener {
+            val ButtonSetDarkFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
+            ButtonSetDarkFrame.visibility = View.VISIBLE
+            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            if (sharedPreferences.contains("is_dark_wallpaper_set?")) {
+                val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
+                ButtonSetDark.text = "立即设置壁纸"
+            }else{
+                val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
+                ButtonSetDark.text = "立即选择图片"
+            }
+        }
+        val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
+        ButtonSetDark.setOnClickListener {
+            if (ButtonSetDark.text == "立即选择图片") {
+                mode_pictureSelect = "dark"
+                openGallery()
+            }else{
+                switchNow("dark")
+            }
+        }
+        //按钮：立即设置（浅色）（点击图片）
+        val CardViewLight = findViewById<CardView>(R.id.cardViewLight)
+        CardViewLight.setOnClickListener {
+            val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
+            ButtonSetLightFrame.visibility = View.VISIBLE
+            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            if (sharedPreferences.contains("is_light_wallpaper_set?")) {
+                val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
+                ButtonSetLight.text = "立即设置壁纸"
+            }else{
+                val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
+                ButtonSetLight.text = "立即选择图片"
+            }
+        }
+        val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
+        ButtonSetLight.setOnClickListener {
+            if (ButtonSetLight.text == "立即选择图片") {
+                mode_pictureSelect = "light"
+                openGallery()
+            }else{
+                switchNow("light")
+            }
+        }
+
 
     }//onCreate END
+
+    override fun onResume() {
+        super.onResume()
+        val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
+        val ButtonDarkLightFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
+        ButtonSetLightFrame.visibility = View.GONE
+        ButtonDarkLightFrame.visibility = View.GONE
+    }
 
     //Functions
     private fun saveSwitchState(key: String, isChecked: Boolean) {
@@ -326,7 +377,7 @@ class DarkModeActivity: AppCompatActivity() {
             val bitmapForScale = bitmap.copy(Bitmap.Config.ARGB_8888, true)
             val croppedBitmap = info(bitmapForScale)
             val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            val whatMode = sharedPreferences.getString("whatmode?", "")
+            val whatMode = mode_pictureSelect
             val fileName = when (whatMode) {
                 "dark" -> "selected_image_dark.jpg"
                 "light" -> "selected_image_light.jpg"
@@ -484,14 +535,14 @@ class DarkModeActivity: AppCompatActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(13.dp)
+                            .padding(10.dp)
                             .background(colorResource(id = R.color.HeadBackground))
                             .border(
-                                2.dp,
+                                1.dp,
                                 colorResource(id = R.color.HeadText),
-                                RoundedCornerShape(20.dp)
+                                RoundedCornerShape(16.dp)
                             )
-                            .padding(16.dp)
+                            .padding(10.dp)
 
                     ) {
                         Text(
@@ -501,7 +552,6 @@ class DarkModeActivity: AppCompatActivity() {
                         )
                     }
                 }
-
             }
         }
 
@@ -518,6 +568,10 @@ class DarkModeActivity: AppCompatActivity() {
             apply()
             loadImage()
         }
+        val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
+        val ButtonDarkLightFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
+        ButtonSetLightFrame.visibility = View.GONE
+        ButtonDarkLightFrame.visibility = View.GONE
     }
 
     @OptIn(DelicateCoroutinesApi::class)
