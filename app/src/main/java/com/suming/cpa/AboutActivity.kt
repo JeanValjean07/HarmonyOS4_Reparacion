@@ -39,23 +39,18 @@ class AboutActivity : AppCompatActivity() {
             finish()
         }
         //按钮：查看Github仓库
-        val ButtonGoGithub = findViewById<TextView>(R.id.buttonGoGithub)
+        val ButtonGoGithub = findViewById<TextView>(R.id.buttonGoGithubRelease)
         ButtonGoGithub.setOnClickListener {
-            val url = "https://github.com/JeanValjean07/HarmonyOS4_Reparacion"
+            val url = "https://github.com/JeanValjean07/HarmonyOS4_Reparacion/releases"
             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             startActivity(intent)
         }
-        //按钮：查看酷安主页
-        val ButtonGoCoolApk = findViewById<TextView>(R.id.buttonGoCoolApk)
-        ButtonGoCoolApk.setOnClickListener {
-            val coolapkUri = "coolmarket://u/3105725".toUri()
-            val intent = Intent(Intent.ACTION_VIEW, coolapkUri)
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
-            } else {
-                val webUri = "https://www.coolapk.com/u/3105725".toUri()
-                startActivity(Intent(Intent.ACTION_VIEW, webUri))
-            }
+        //按钮：反馈问题
+        val ButtonReportIssue = findViewById<TextView>(R.id.buttonReportIssue)
+        ButtonReportIssue.setOnClickListener {
+            val url = "https://space.bilibili.com/1206378184"
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+            startActivity(intent)
         }
         //超链接：开放源代码许可
         val ButtonOpenSourceLicense = findViewById<TextView>(R.id.openSourceLicense)
