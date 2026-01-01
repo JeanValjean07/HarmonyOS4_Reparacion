@@ -48,12 +48,6 @@ class DarkModeTileService : TileService() {
     private fun updateTileState() {
         val tile = qsTile
         tile?.apply {
-            /*
-            state = if (isEnabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-            icon = Icon.createWithResource(this@DarkModeTileService,
-                R.drawable.ic_tile_selector)
-            updateTile()
-            */
 
             state = if (isEnabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
 

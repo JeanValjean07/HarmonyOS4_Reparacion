@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">补全计划A</string>
-    <string name="buttonChange">更换</string>
+    <string name="app_name">补全计划</string>
 
 
     <string name="description_darkmode">

@@ -1,18 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.suming.cpa">
-
-
-
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATIONS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
-
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:ignore="ForegroundServicesPolicy" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
 
     <application
@@ -20,12 +19,12 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="补全计划A"
+        android:label="补全计划"
         android:supportsRtl="true"
         android:extractNativeLibs="true"
         android:theme="@style/MainTheme">
 
-        <!-- 控制中心磁铁 -->
+        <!-- 控制中心磁贴 -->
         <meta-data
             android:name="com.huawei.messaging.default_notification_icon"
             android:value="@drawable/ic_launcher_foreground"/>
@@ -57,7 +56,6 @@
         <!-- 音量控制 -->
         <activity android:name=".VolumeControl"
             android:exported="true"/>
-
 
 
         <!-- 通知控制 -->
@@ -119,6 +117,12 @@
                 android:name="huawei.theme.accent_support"
                 android:value="true" />
         </service>
+        <!-- 服务：全局均衡器 -->
+        <service
+            android:name=".VolumeControlService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            tools:ignore="ForegroundServicePermission" />
 
         <!-- 服务：通知监听 -->
         <service android:name=".NotiService"
@@ -130,4 +134,5 @@
         </service>
 
     </application>
+
 </manifest>

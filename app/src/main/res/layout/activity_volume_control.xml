@@ -155,6 +155,54 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <Button
+                android:id="@+id/readChannelCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:text="读取通道数"
+                android:textColor="@color/ButtonBg"
+                android:textSize="13sp" />
+            <Button
+                android:id="@+id/applyGain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="20dp"
+                android:text="修改增益"
+                android:textColor="@color/ButtonBg"
+                android:textSize="13sp" />
+            <Button
+                android:id="@+id/applyGain2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="20dp"
+                android:text="修改增益2"
+                android:textColor="@color/ButtonBg"
+                android:textSize="13sp" />
+            <Button
+                android:id="@+id/Decrease"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="20dp"
+                android:text="降低"
+                android:textColor="@color/ButtonBg"
+                android:textSize="13sp" />
+            <Button
+                android:id="@+id/Increase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="20dp"
+                android:text="增加"
+                android:textColor="@color/ButtonBg"
+                android:textSize="13sp" />
+
+
 
 
         </LinearLayout>

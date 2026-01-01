@@ -16,9 +16,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.2.1"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
 
         ndk{
             abiFilters.add("arm64-v8a")
@@ -27,7 +25,6 @@ android {
     }
 
     buildTypes {
-
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -35,7 +32,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
         }
     }
 
@@ -51,8 +47,6 @@ android {
             excludes.add("fonts/**")
         }
     }
-
-
 
     /*
     aaptOptions {
@@ -74,19 +68,10 @@ android {
         }
     }*/
 
-
-
-
-
-
-
-
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
 
     kotlinOptions {
        jvmTarget = "21"
@@ -102,10 +87,7 @@ android {
 
 }
 
-
-
-
-    dependencies {
+dependencies {
         implementation("com.google.android.gms:play-services-oss-licenses:17.2.2")
         implementation(platform("androidx.compose:compose-bom:2023.10.01"))
         implementation("androidx.compose.ui:ui")
@@ -113,19 +95,12 @@ android {
         implementation("androidx.compose.ui:ui-tooling-preview")
         implementation("androidx.activity:activity-compose:1.8.0")
         implementation("androidx.core:core-ktx:1.12.0")
-
         implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-
-
         // Compose
         implementation("androidx.compose.foundation:foundation:1.8.3")
         implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
         implementation("androidx.compose.material3:material3:1.2.0")
-
-
-        // Compose 测试库
         //androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
-
 
         // AndroidX
         implementation(libs.androidx.core.ktx)
@@ -135,11 +110,6 @@ android {
         implementation(libs.androidx.constraintlayout)
         implementation(libs.androidx.ui.android)
         implementation(libs.androidx.material3.android)
-
-        // Testing
-        //testImplementation(libs.junit)
-        //androidTestImplementation(libs.androidx.junit)
-
 
         // AndroidX Material3
         //implementation(libs.androidx.material3)
