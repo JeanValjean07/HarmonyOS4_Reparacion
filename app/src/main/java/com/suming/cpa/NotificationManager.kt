@@ -64,13 +64,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-interface ReceiverCallback {
-    fun onNotificationReceived(packageName:String, title:String, content: String)
-}
-
 @Suppress("LocalVariableName")
-class NotiControl: AppCompatActivity(), ReceiverCallback {
+class NotificationManager: AppCompatActivity(), ReceiverCallback {
 
     private val NotiList = mutableStateListOf<MutableList<String>>()
     private var count=0
@@ -78,12 +73,21 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
 
     private var showGuidance = 0
 
+    //权限状态按钮
+    private lateinit var ButtonCard_notiPermission: CardView
+    private lateinit var ButtonText_notiPermission: TextView
+    private lateinit var noticeText_notiPermission: TextView
+
+
+
+
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_noticontrol)
+        setContentView(R.layout.activity_notification)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_noticontrol)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -92,7 +96,7 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
 
         //准备工作
         preCheck()
-        //调用showContent先展示出默认内容
+        //展示出默认内容
         showContent()
 
         //注册接收器
@@ -155,15 +159,13 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
 
 
         //按钮：开启通知访问权限
-        val ButtonOpenNotiListener = findViewById<TextView>(R.id.buttonOpenNotiListener)
-        ButtonOpenNotiListener.setOnClickListener {
+        ButtonCard_notiPermission.setOnClickListener {
             goNotiSetting()
         }
         //按钮：搜索应用关闭
-        val ButtonAppList = findViewById<TextView>(R.id.buttonSearchApp)
+        val ButtonAppList = findViewById<CardView>(R.id.ButtonCard_toAppList)
         ButtonAppList.setOnClickListener {
-            notice("该功能完善中", 5000)
-            return@setOnClickListener
+            startActivity(Intent(this, ApplicationManager::class.java))
         }
 
     }//onCreate END
@@ -334,29 +336,32 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
     }
 
     private fun preCheck(){
-        //检查权限是否开启
+        //初始化控件
+        ButtonCard_notiPermission = findViewById(R.id.ButtonCard_toNotiPermission)
+        ButtonText_notiPermission = findViewById(R.id.ButtonText_toNotiPermission)
+        noticeText_notiPermission = findViewById(R.id.noticeText_aboutNotiListener)
+
+        //检查权限是否开启,更新预置提示信息
         val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(this)
         val isNotificationListenerEnabled = enabledListenerPackages.contains(packageName)
         if(isNotificationListenerEnabled){
-            val ButtonOpenNotiListener = findViewById<TextView>(R.id.buttonOpenNotiListener)
-            ButtonOpenNotiListener.text = "去关闭"
-            val ButtonNotiListenerText = findViewById<TextView>(R.id.buttonNotiListenerText)
-            ButtonNotiListenerText.text = "通知访问权限：已开启"
-        } else{
-            val ButtonNotiListenerText = findViewById<TextView>(R.id.buttonNotiListenerText)
-            ButtonNotiListenerText.text = "通知访问权限：未开启"
+            ButtonText_notiPermission.text = "去关闭"
+            noticeText_notiPermission.text = "建议使用后关闭该权限"
+        }else{
+            noticeText_notiPermission.text = "需要开启通知访问权限，然后才能获取通知"
         }
+
         //申请通知权限
         val channelId = "refresh"
         val channelName = "通知监听器刷新"
         val channelDescription = "用于刷新通知监听器状态"
         val importance = NotificationManager.IMPORTANCE_HIGH
-
         val channel = NotificationChannel(channelId, channelName, importance).apply {  //固有
             description = channelDescription
         }
         val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
+
         //读取设置
         val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         showGuidance = sharedPreferences.getInt("showGuidance", 0)
@@ -423,6 +428,10 @@ class NotiControl: AppCompatActivity(), ReceiverCallback {
 
 }//class END
 
+
+interface ReceiverCallback {
+    fun onNotificationReceived(packageName:String, title:String, content: String)
+}
 
 
 

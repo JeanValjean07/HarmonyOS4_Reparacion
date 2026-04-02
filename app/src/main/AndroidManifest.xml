@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:ignore="ForegroundServicesPolicy" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
 
 
     <application
@@ -40,39 +40,61 @@
         </activity>
 
         <!-- 深色模式壁纸 -->
-        <activity android:name=".DarkModeActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".DarkModeActivity"
+            android:exported="true"
+            />
 
         <!-- 切换模式纯净版 -->
-        <activity android:name=".DarkModePure"
+        <activity
+            android:name=".DarkModePure"
             android:excludeFromRecents="true"
             android:theme="@style/DarkModePureTheme"
-            android:exported="true"/>
+            android:exported="true"
+            />
+
+        <!-- 应用管理 -->
+        <activity
+            android:name=".ApplicationManager"
+            android:exported="true"
+            />
 
         <!-- 后台检查 -->
-        <activity android:name=".BackgroundCheckActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".BackgroundCheckActivity"
+            android:exported="true"
+            />
 
         <!-- 音量控制 -->
-        <activity android:name=".VolumeControl"
-            android:exported="true"/>
+        <activity
+            android:name=".VolumeControl"
+            android:exported="true"
+            />
 
 
         <!-- 通知控制 -->
-        <activity android:name=".NotiControl"
-            android:exported="true"/>
+        <activity
+            android:name=".NotificationManager"
+            android:exported="true"
+            />
 
         <!-- 指南和帮助 -->
-        <activity android:name=".GuidanceActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".GuidanceActivity"
+            android:exported="true"
+            />
 
         <!-- 设置 -->
-        <activity android:name=".SettingsActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="true"
+            />
 
         <!-- 关于 -->
-        <activity android:name=".AboutActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".AboutActivity"
+            android:exported="true"
+            />
 
         <!-- 开放源代码许可 -->
         <activity android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"

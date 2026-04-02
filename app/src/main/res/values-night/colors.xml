@@ -42,4 +42,8 @@
 
     <color name="White">#FFFFFF</color>
 
+
+    <color name="ButtonCard_Background">#000000</color>
+    <color name="ButtonCard_Text">#FAFAFA</color>
+
 </resources>

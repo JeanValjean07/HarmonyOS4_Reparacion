@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         //按钮：通知管理
         val ButtonNotiController = findViewById<Button>(R.id.buttonNotiController)
         ButtonNotiController.setOnClickListener {
-            val intent = Intent(this, NotiControl::class.java)
+            val intent = Intent(this, NotificationManager::class.java)
             startActivity(intent)
         }
         //按钮：桌面时钟

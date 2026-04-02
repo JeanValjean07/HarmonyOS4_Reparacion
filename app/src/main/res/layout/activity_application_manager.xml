@@ -1,0 +1,52 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_application_manager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <!-- AppBar -->
+    <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar1"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@android:color/transparent"
+            app:contentInsetStart="0dp"
+            android:elevation="1dp">
+            <!-- AppBar# -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal">
+                <ImageButton
+                    android:id="@+id/buttonToolbarExit"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="start|center"
+                    android:layout_marginStart="10dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:foreground="@null"
+                    android:contentDescription="退出"
+                    android:padding="6dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_arrow_left"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|center"
+                    android:gravity="center"
+                    android:text="应用列表"
+                    android:textStyle="bold"
+                    android:textColor="@color/HeadText"
+                    android:textSize="23sp" />
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
