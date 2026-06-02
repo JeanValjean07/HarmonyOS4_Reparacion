@@ -1,4 +1,4 @@
-package com.suming.cpa
+package com.suming.reparacion.helper
 
 import android.app.Activity
 import android.content.Context
@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import com.suming.reparacion.R
 
 fun Context.showCustomToast(message: String, position: Int = 3) {
 

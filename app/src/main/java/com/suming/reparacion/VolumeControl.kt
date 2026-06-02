@@ -1,11 +1,10 @@
-package com.suming.cpa
+package com.suming.reparacion
 
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.audiofx.DynamicsProcessing
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView

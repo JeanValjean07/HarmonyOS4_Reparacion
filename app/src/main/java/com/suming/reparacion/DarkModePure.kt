@@ -1,4 +1,4 @@
-package com.suming.cpa
+package com.suming.reparacion
 
 import android.app.WallpaperManager
 import android.content.Intent

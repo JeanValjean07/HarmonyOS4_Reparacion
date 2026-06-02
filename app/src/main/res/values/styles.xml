@@ -22,6 +22,13 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
+    <!-- 基础主题-移除顶栏 -->
+    <style name="BASIC_NO_BAR" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
 
 
 

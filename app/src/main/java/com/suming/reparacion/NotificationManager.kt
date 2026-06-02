@@ -1,4 +1,4 @@
-package com.suming.cpa
+package com.suming.reparacion
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -59,7 +59,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.suming.cpa.NotiService.Companion.ACTION_NOTIFICATION_RECEIVED
+import com.suming.reparacion.NotiService.Companion.ACTION_NOTIFICATION_RECEIVED
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

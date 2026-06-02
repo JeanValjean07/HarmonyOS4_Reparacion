@@ -7,11 +7,12 @@ plugins {
 }
 
 android {
-    namespace = "com.suming.cpa"
+    namespace = "com.suming.reparacion"
+    //noinspection GradleDependency,GradleDependency
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.suming.cpa"
+        applicationId = "com.suming.reparacion"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -100,6 +101,7 @@ dependencies {
         implementation("androidx.compose.foundation:foundation:1.8.3")
         implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
         implementation("androidx.compose.material3:material3:1.2.0")
+        implementation("androidx.compose.material:material-icons-extended:1.2.0")
         //androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
 
         // AndroidX

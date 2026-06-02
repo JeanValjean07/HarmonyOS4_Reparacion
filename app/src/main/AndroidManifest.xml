@@ -1,7 +1,7 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.suming.cpa">
+    package="com.suming.reparacion">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
@@ -31,7 +31,8 @@
 
         <!-- 主页 -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.suming.reparacion.MainActivity"
+            android:theme="@style/BASIC_NO_BAR"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,13 +42,13 @@
 
         <!-- 深色模式壁纸 -->
         <activity
-            android:name=".DarkModeActivity"
+            android:name="com.suming.reparacion.DarkModeActivity"
             android:exported="true"
             />
 
         <!-- 切换模式纯净版 -->
         <activity
-            android:name=".DarkModePure"
+            android:name="com.suming.reparacion.DarkModePure"
             android:excludeFromRecents="true"
             android:theme="@style/DarkModePureTheme"
             android:exported="true"
@@ -55,44 +56,44 @@
 
         <!-- 应用管理 -->
         <activity
-            android:name=".ApplicationManager"
+            android:name="com.suming.reparacion.ApplicationManager"
             android:exported="true"
             />
 
         <!-- 后台检查 -->
         <activity
-            android:name=".BackgroundCheckActivity"
+            android:name="com.suming.reparacion.BackgroundCheckActivity"
             android:exported="true"
             />
 
         <!-- 音量控制 -->
         <activity
-            android:name=".VolumeControl"
+            android:name="com.suming.reparacion.VolumeControl"
             android:exported="true"
             />
 
 
         <!-- 通知控制 -->
         <activity
-            android:name=".NotificationManager"
+            android:name="com.suming.reparacion.NotificationManager"
             android:exported="true"
             />
 
         <!-- 指南和帮助 -->
         <activity
-            android:name=".GuidanceActivity"
+            android:name="com.suming.reparacion.GuidanceActivity"
             android:exported="true"
             />
 
         <!-- 设置 -->
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.suming.reparacion.SettingsActivity"
             android:exported="true"
             />
 
         <!-- 关于 -->
         <activity
-            android:name=".AboutActivity"
+            android:name="com.suming.reparacion.AboutActivity"
             android:exported="true"
             />
 
@@ -110,7 +111,7 @@
 
         <!-- 服务：控制中心磁贴:深色壁纸 -->
         <service
-            android:name="com.suming.cpa.DarkModeTileService"
+            android:name="com.suming.reparacion.DarkModeTileService"
             android:exported="true"
             android:label="深色壁纸"
             android:icon="@drawable/ic_tile_dark_mode"
@@ -126,7 +127,7 @@
 
         <!-- 服务：控制中心磁贴:音量面板 -->
         <service
-            android:name="com.suming.cpa.VolumeTileService"
+            android:name="com.suming.reparacion.VolumeTileService"
             android:exported="true"
             android:label="音量面板"
             android:icon="@drawable/ic_tile_volume"
@@ -141,13 +142,13 @@
         </service>
         <!-- 服务：全局均衡器 -->
         <service
-            android:name=".VolumeControlService"
+            android:name="com.suming.reparacion.VolumeControlService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ForegroundServicePermission" />
 
         <!-- 服务：通知监听 -->
-        <service android:name=".NotiService"
+        <service android:name="com.suming.reparacion.NotiService"
             android:exported="true"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
