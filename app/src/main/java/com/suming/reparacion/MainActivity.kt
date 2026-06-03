@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +16,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,8 +50,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -60,18 +60,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import com.suming.reparacion.data.ToolList
@@ -287,8 +288,15 @@ class MainActivity : AppCompatActivity() {
                 .then(if (border != null) Modifier.border(border, CircleShape) else Modifier)
                 .clip(CircleShape)
                 .then(backgroundModifier)
-                .clickable(enabled = enabled) { onClick() },
-            contentAlignment = Alignment.Center
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(
+                        bounded = true,
+                        color = Color.Gray
+                    )
+                ) { onClick() },
+            contentAlignment = Alignment.Center,
         ) {
             content()
         }
@@ -335,6 +343,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("UnrememberedMutableState")
     @Composable
     fun ToolsListColumn(toolsList: List<ToolPackage>, animatedTopPadding: Dp) {
+        //指定边距
         val contentPadding by derivedStateOf {
             PaddingValues(
                 top = animatedTopPadding,
@@ -352,9 +361,7 @@ class MainActivity : AppCompatActivity() {
                 ToolCard(
                     name = tool.name,
                     description = tool.description,
-                    onClick = {
-                        onClickListItem(tool.intent)
-                    }
+                    onClick = { onClickListItem(tool.intent) }
                 )
             }
         }
@@ -367,8 +374,11 @@ class MainActivity : AppCompatActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 3.dp)
+                //.shadow(elevation = 5.dp, shape = RoundedCornerShape(12.dp), clip = false, spotColor = Color.Black.copy(alpha = 0.2f), ambientColor = Color.Black.copy(alpha = 1f))
+                .uniformShadow()
+                .clip(RoundedCornerShape(12.dp))
                 .background(Color.Transparent),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             shape = RoundedCornerShape(15.dp),
             border = BorderStroke(
                 width = 0.5.dp,
@@ -380,26 +390,50 @@ class MainActivity : AppCompatActivity() {
             onClick = onClick
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(13.dp)
-
+                modifier = Modifier.fillMaxWidth().padding(13.dp)
             ) {
+                //大标题
                 Text(
                     text = name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.primary
                 )
-
+                //大小标题间距
                 Spacer(modifier = Modifier.height(4.dp))
-
+                //小标题或描述
                 Text(
                     text = description,
                     fontSize = 12.sp,
                     color = colorScheme.secondary
                 )
             }
+        }
+    }
+    //自定义阴影
+    @Suppress("DEPRECATION")
+    fun Modifier.uniformShadow(
+        blurRadius: Float = 15f,
+        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
+    ) = this.drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().apply {
+                color = shadowColor
+                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                    blurRadius,
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+            }
+
+            canvas.drawRoundRect(
+                left = 0f,
+                top = 0f,
+                right = size.width,
+                bottom = size.height,
+                radiusX = 12.dp.toPx(),
+                radiusY = 12.dp.toPx(),
+                paint = paint
+            )
         }
     }
     //composable颜色配置

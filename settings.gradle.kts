@@ -36,5 +36,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "cpa"
+rootProject.name = "Reparacion"
 include(":app")
