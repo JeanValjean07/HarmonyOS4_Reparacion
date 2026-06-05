@@ -66,7 +66,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -77,7 +76,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import com.suming.reparacion.data.ToolList
 import com.suming.reparacion.data.ToolPackage
-import com.suming.reparacion.helper.showCustomToast
+import com.suming.reparacion.HelperTools.showCustomToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -105,7 +104,7 @@ class MainActivity : AppCompatActivity() {
             ComposeRoot(toolsList, mainViewModel)
         }
 
-    } //onCreate END
+    }
 
     @Composable
     fun ComposeRoot(toolsList: List<ToolPackage>, mainViewModel: MainViewModel) {
@@ -133,7 +132,7 @@ class MainActivity : AppCompatActivity() {
             GlobalBackPic()
 
             //
-            ToolsListColumn(toolsList, animatedTopPadding )
+            ToolsListColumn(toolsList, topPaddingDp )
 
 
             //最顶层
@@ -142,7 +141,6 @@ class MainActivity : AppCompatActivity() {
                     topBarHeight = height
                 })
         }
-
 
 
     }
@@ -199,7 +197,7 @@ class MainActivity : AppCompatActivity() {
 
                         Text(
                             text = "补全计划",
-                            fontSize = 25.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = colorScheme.primary,
                             modifier = Modifier.padding(start = 5.dp)
@@ -303,10 +301,9 @@ class MainActivity : AppCompatActivity() {
     }
     @Composable
     fun BrushArea(modifier: Modifier = Modifier, height: Dp = 110.dp) {
-
         val darkTheme: Boolean = isSystemInDarkTheme()
         val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-
+        //
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -314,9 +311,10 @@ class MainActivity : AppCompatActivity() {
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            colorScheme.surface.copy(alpha = 1.0f),
-                            colorScheme.surface.copy(alpha = 0.9f),
-                            colorScheme.surface.copy(alpha = 0.3f),
+                            colorScheme.surface.copy(alpha = 0.90f),
+                            colorScheme.surface.copy(alpha = 0.80f),
+                            colorScheme.surface.copy(alpha = 0.60f),
+                            colorScheme.surface.copy(alpha = 0.30f),
                             colorScheme.surface.copy(alpha = 0f)
                         ),
                         startY = 30f,
@@ -526,4 +524,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-}//class END
+}

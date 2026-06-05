@@ -9,81 +9,22 @@
     android:background="@color/Background"
     tools:context=".DarkModeActivity"
     tools:ignore="HardcodedText">
-    <!-- AppBar -->
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- 顶部栏 -->
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/TopBarCompose"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/HeadBackground"
-        android:outlineSpotShadowColor="@color/HeadText"
-        app:liftOnScrollColor="@color/HeadBackground"
-        android:outlineAmbientShadowColor="@color/HeadText">
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar1"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@android:color/transparent"
-            app:contentInsetStart="0dp"
-            android:elevation="1dp">
-            <!-- AppBar# -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-                <ImageButton
-                    android:id="@+id/buttonToolbarExit"
-                    android:layout_width="50dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="start|center"
-                    android:layout_marginStart="5dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="退出"
-                    android:padding="11dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_go_back_2"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="start|center"
-                    android:gravity="center"
-                    android:padding="5dp"
-                    android:text="深色模式壁纸"
-                    android:textColor="@color/HeadText"
-                    android:textSize="20sp" />
-            </LinearLayout>
-        </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
-    <!-- NoticeCard -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/noticeCard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|top"
-        app:cardElevation="8dp"
-        app:cardCornerRadius="50dp"
-        android:backgroundTint="@color/Background"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="50dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone">
-        <TextView
-            android:id="@+id/notice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:textColorHint="@color/ButtonText"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="动态提示文本区域"
-            android:textColor="@color/HeadText"
-            android:textSize="12sp"/>
-    </androidx.cardview.widget.CardView>
+        android:elevation="10dp"
+        />
+
+
     <!-- 滚动区域 -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/NestedScrollArea"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:paddingTop="30dp"
+        android:clipToPadding="false">
         <!-- 滚动区域 -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -112,14 +53,20 @@
                         android:layout_gravity="center"
                         android:layout_marginStart="15dp"
                         android:scaleType="fitCenter" />
-                    <TextView
+                    <HorizontalScrollView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_margin="11dp"
-                        android:textColor="@color/HeadText"
-                        android:textSize="13sp"
-                        android:text="为深色或浅色模式分别设置壁纸"/>
+                        android:scrollbars="none"
+                        android:layout_margin="11dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="为深色或浅色模式分别设置壁纸，并提供便捷设置的方法"
+                            android:textColor="@color/HeadText"
+                            android:textSize="13sp"
+                            />
+                    </HorizontalScrollView>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
             <!-- 开关卡 -->
@@ -224,33 +171,14 @@
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="10dp"
                             android:backgroundTint="@color/Background2"
-                            app:cardCornerRadius="6dp"
+                            app:cardCornerRadius="10dp"
                             app:cardElevation="5dp">
-
                             <ImageView
                                 android:id="@+id/imageDark"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:scaleType="centerCrop" />
-
-                            <FrameLayout
-                                android:id="@+id/buttonSetDarkFrame"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:visibility="gone">
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:background="@color/Background5"/>
-                                <TextView
-                                    android:id="@+id/buttonSetDark"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
-                                    android:text="立即设置"
-                                    android:textColor="@color/HeadText"
-                                    android:textSize="11sp" />
-                            </FrameLayout>
+                                android:scaleType="centerCrop"
+                                />
                         </androidx.cardview.widget.CardView>
                         <!-- 左卡文字 -->
                         <LinearLayout
@@ -299,7 +227,7 @@
                             android:layout_marginTop="20dp"
                             android:layout_marginEnd="20dp"
                             android:backgroundTint="@color/Background2"
-                            app:cardCornerRadius="6dp"
+                            app:cardCornerRadius="10dp"
                             app:cardElevation="5dp">
                             <ImageView
                                 android:id="@+id/imageLight"
@@ -307,25 +235,8 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="0"
                                 android:contentDescription="1"
-                                android:scaleType="centerCrop" />
-                            <FrameLayout
-                                android:id="@+id/buttonSetLightFrame"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:visibility="gone">
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:background="@color/Background5" />
-                                <TextView
-                                    android:id="@+id/buttonSetLight"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
-                                    android:text="立即设置"
-                                    android:textColor="@color/HeadText"
-                                    android:textSize="11sp" />
-                            </FrameLayout>
+                                android:scaleType="centerCrop"
+                                />
                         </androidx.cardview.widget.CardView>
                         <!-- 右卡文字 -->
                         <LinearLayout
@@ -384,14 +295,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/ButtonBg"
-                    android:text="切换深色模式壁纸丨自动返回"
+                    android:text="@string/dark_mode_paper_apply_notice_dark"
                     android:textColor="@color/ButtonText" />
                 <Button
                     android:id="@+id/buttonSwitchLight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/ButtonBg"
-                    android:text="切换浅色模式壁纸丨自动返回"
+                    android:text="@string/dark_mode_paper_apply_notice_light"
                     android:textColor="@color/ButtonText" />
                 <Button
                     android:id="@+id/buttonAddTile"
@@ -416,12 +327,13 @@
                     android:textColor="@color/ButtonText" />
             </LinearLayout>
 
-            <!-- Compose -->
+            <!-- ExplanationCompose -->
             <androidx.compose.ui.platform.ComposeView
-                android:id="@+id/compose1"
+                android:id="@+id/ExplanationCompose"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

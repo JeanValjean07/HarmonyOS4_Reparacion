@@ -43,6 +43,7 @@
         <!-- 深色模式壁纸 -->
         <activity
             android:name="com.suming.reparacion.DarkModeActivity"
+            android:theme="@style/BASIC_NO_BAR"
             android:exported="true"
             />
 

@@ -79,9 +79,6 @@ class NotificationManager: AppCompatActivity(), ReceiverCallback {
     private lateinit var noticeText_notiPermission: TextView
 
 
-
-
-
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -168,7 +165,7 @@ class NotificationManager: AppCompatActivity(), ReceiverCallback {
             startActivity(Intent(this, ApplicationManager::class.java))
         }
 
-    }//onCreate END
+    }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
@@ -426,7 +423,7 @@ class NotificationManager: AppCompatActivity(), ReceiverCallback {
         showNoticeJob(text, duration)
     }
 
-}//class END
+}
 
 
 interface ReceiverCallback {

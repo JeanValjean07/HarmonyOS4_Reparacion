@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.app.WallpaperManager
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
@@ -13,9 +14,11 @@ import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Process
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
@@ -23,7 +26,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -32,33 +34,70 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.cardview.widget.CardView
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.graphics.scale
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.HelperTools.showCustomToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -72,113 +111,385 @@ import java.io.OutputStream
 
 @Suppress("LocalVariableName")
 class DarkModeActivity: AppCompatActivity() {
-    //数值设置区
-    private lateinit var Switch1: SwitchCompat
-    private lateinit var Switch2: SwitchCompat
-    private val COOLDOWN_TIME_2 = 4000L
-    private var lastClickTime: Long = 0
-    private var killWhenExit = 0
 
-    //深色或浅色标志位
-    private var mode_pictureSelect = ""
+    private val CoolDownGap_createShortcut = 4000L
+    private var lastClickMillis: Long = 0
 
-    //点图遮罩标志位
-    private var DarkCoverShowing = false
-    private var LightCoverShowing = false
 
+    //连接到ViewModel
+    val HelperViewModel = HelperViewModel()
+    //NestedScrollArea
+    private lateinit var NestedScrollArea: NestedScrollView
+
+    //Lifecycle
     @SuppressLint("MissingInflatedId", "InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //界面配置
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         setContentView(R.layout.activity_dark_mode)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_darkmode)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
         //准备工作
-        preCheck()
+        init()
 
 
-        //按钮：退出
-        val ButtonExit = findViewById<ImageButton>(R.id.buttonToolbarExit)
-        ButtonExit.setOnClickListener {
-            finish()
+        //TopBarCompose
+        val TopBarCompose = findViewById<ComposeView>(R.id.TopBarCompose)
+        TopBarCompose.setContent{
+            ComposeRoot()
         }
-        //Notice卡片点击时关闭
-        val NoticeCard = findViewById<CardView>(R.id.noticeCard)
-        NoticeCard.setOnClickListener {
-            NoticeCard.visibility = View.GONE
-        }
-        //点击彩蛋
-        val SignDarkMode = findViewById<ImageView>(R.id.sign_dark_mode)
-        SignDarkMode.setOnClickListener {
-            notice("哼,哼,啊啊啊啊啊啊啊",1000)
-        }
-
-
-
-        //开关：将选择的壁纸保存到外部
-        Switch1 = findViewById(R.id.switchToGallery)
-        Switch1.setOnCheckedChangeListener { _, isChecked ->
-            saveSwitchState("saveToPublic", isChecked)
-        }
-        restoreSwitchState("saveToPublic")
-        //开关：壁纸slightMove  //注意：华为的安卓10需要拦截此功能
-        Switch2 = findViewById(R.id.switchSlightMove)
-        Switch2.setOnCheckedChangeListener { _, isChecked ->
-            val isHuaweiAndroid10: Boolean = Build.MANUFACTURER.equals("huawei", ignoreCase = true) && Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
-            if (isHuaweiAndroid10) {
-                notice("由于华为在安卓10上魔改了壁纸管理器,此功能不可用",10000)
-                return@setOnCheckedChangeListener
+        //ExplanationCompose
+        val ExplanationCompose = findViewById<ComposeView>(R.id.ExplanationCompose)
+        ExplanationCompose.setContent {
+            val Y =300
+            val T = 300
+            var isVisible by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                isVisible = true
             }
-            saveSwitchState("slightmove", isChecked)
-        }
-        restoreSwitchState("slightmove")
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = slideInVertically(
+                    initialOffsetY = { Y },
+                    animationSpec = tween(durationMillis = T)
+                )
+            ){
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .background(colorResource(id = R.color.HeadBackground))
+                        .border(
+                            1.dp,
+                            colorResource(id = R.color.HeadText),
+                            RoundedCornerShape(16.dp)
+                        )
+                        .padding(10.dp)
 
-        //主区域按钮
+                ) {
+                    Text(
+                        text = getString(R.string.description_darkmode),
+                        style = TextStyle(fontSize = 14.sp),
+                        color = colorResource(id = R.color.HeadText),
+                    )
+                }
+            }
+        }
+
+
+        //注册开关
+        registerSwitchAction()
+
+        //加载图片展示区
+        initLoadWallpapers()
+
+        //注册其他操作
+        registerMoreActions()
+
+        //主要操作按钮
+        registerMainActions()
+
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+    }
+
+
+
+    //Composable Functions
+    @Composable
+    fun ComposeRoot() {
+        //使用Box作为根布局
+        Box(modifier = Modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .background(Color.Transparent)) {
+
+            //顶部栏高度值
+            val statusBarHeight = WindowInsets.statusBars.getTop(LocalDensity.current)
+            var topBarHeight by remember { mutableIntStateOf(300) }
+            val topPaddingDp = with(LocalDensity.current) {
+                (statusBarHeight + topBarHeight).toDp()
+            }
+
+            //顶部栏高度值动画 也可不使用动画单纯传值
+            //曲线可选 CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
+            val animatedTopPadding by animateDpAsState(
+                targetValue = topPaddingDp,
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = FastOutSlowInEasing
+                )
+            )
+
+
+            //最顶层
+            BrushArea()
+            AdvancedTopBar(onHeightMeasured = { height ->
+                //更新内边距
+                updateNestTopPadding(height + statusBarHeight)
+                //
+                topBarHeight = height
+            })
+        }
+
+
+    }
+    @OptIn(ExperimentalMaterial3Api::class)
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @Composable
+    fun AdvancedTopBar(onHeightMeasured: (height: Int) -> Unit) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .height(60.dp)
+                .onGloballyPositioned { coordinates ->
+                    onHeightMeasured(coordinates.size.height)
+                },
+            color = Color.Transparent,
+        ) {
+            val darkTheme: Boolean = isSystemInDarkTheme()
+            val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+            //顶部栏内容
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(59.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    //左侧
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //返回按钮
+                        CircleButton(
+                            onClick = { finish() },
+                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            size = 40.dp,
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = Color.Gray.copy(alpha = 0.1f)
+                            ),
+                            modifier = Modifier.padding(start = 15.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "退出",
+                                modifier = Modifier.background(Color.Transparent),
+                                tint = colorScheme.secondary
+                            )
+                        }
+                        //标题文本
+                        Text(
+                            text = "深色模式壁纸",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.primary,
+                            modifier = Modifier.padding(start = 5.dp)
+                        )
+                    }
+                    //右侧
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //设置按钮
+                        CircleButton(
+                            onClick = { startSettingFragment() },
+                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            size = 40.dp,
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = Color.Gray.copy(alpha = 0.1f)
+                            ),
+                            modifier = Modifier.padding(end = 15.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = "设置",
+                                modifier = Modifier.background(Color.Transparent),
+                                tint = colorScheme.secondary
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    @Composable
+    fun CircleButton( onClick: () -> Unit,
+                      modifier: Modifier = Modifier,
+                      size: Dp = 30.dp,
+                      backgroundColor: Color = MaterialTheme.colorScheme.primary,
+                      gradient: Brush? = null,
+                      border: BorderStroke? = null,
+                      elevation: Dp = 3.dp,
+                      enabled: Boolean = true,
+                      content: @Composable () -> Unit ) {
+        val backgroundModifier = when {
+            gradient != null -> Modifier.background(gradient)
+            else -> Modifier.background(backgroundColor)
+        }
+        Box(
+            modifier = modifier
+                .size(size)
+                .shadow(
+                    elevation = elevation,
+                    shape = CircleShape,
+                    clip = false,
+                    spotColor = Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                )
+                .then(if (border != null) Modifier.border(border, CircleShape) else Modifier)
+                .clip(CircleShape)
+                .then(backgroundModifier)
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(
+                        bounded = true,
+                        color = Color.Gray
+                    )
+                ) { onClick() },
+            contentAlignment = Alignment.Center,
+        ) {
+            content()
+        }
+    }
+    @Composable
+    fun BrushArea(modifier: Modifier = Modifier, height: Dp = 110.dp) {
+        val darkTheme: Boolean = isSystemInDarkTheme()
+        val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+        //
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(height)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            colorScheme.surface.copy(alpha = 0.90f),
+                            colorScheme.surface.copy(alpha = 0.80f),
+                            colorScheme.surface.copy(alpha = 0.60f),
+                            colorScheme.surface.copy(alpha = 0.30f),
+                            colorScheme.surface.copy(alpha = 0f)
+                        ),
+                        startY = 30f,
+                    )
+                )
+        )
+    }
+    //composable颜色配置
+    private val LightColorScheme = lightColorScheme(
+        //全局底色
+        surface = Color(0xFFFFFFFF),
+        //一级和二级文字
+        primary = Color(0xFF000000),
+        secondary = Color(0xFF313131),
+        //卡片底色
+        background = Color(0xFFFFFFFF),
+
+        )
+    private val DarkColorScheme = darkColorScheme(
+        //全局底色
+        surface = Color(0xFF000000),
+        //一级和二级文字
+        primary = Color(0xFFFFFFFF),
+        secondary = Color(0xFFF6F6F6),
+        //卡片底色
+        background = Color(0xFF121212),
+    )
+
+    //Functions
+    //注册开关行为
+    private lateinit var switch_save_clip_out: SwitchCompat
+    private lateinit var switch_enable_slightMove: SwitchCompat
+    private fun registerSwitchAction(){
+        lifecycleScope.launch {
+            //开关：将选择的壁纸保存到外部
+            switch_save_clip_out = findViewById(R.id.switchToGallery)
+            switch_save_clip_out.setOnCheckedChangeListener { _, isChecked ->
+                SettingsRequestCenter.set_PREFS_Save_Clip_Out(isChecked)
+            }
+            switch_save_clip_out.isChecked = SettingsRequestCenter.get_PREFS_Save_Clip_Out(this@DarkModeActivity)
+            //开关：壁纸slightMove
+            switch_enable_slightMove = findViewById(R.id.switchSlightMove)
+            switch_enable_slightMove.setOnCheckedChangeListener { _, isChecked ->
+                SettingsRequestCenter.set_PREFS_SlightMove_Clip(isChecked)
+            }
+            switch_enable_slightMove.isChecked = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this@DarkModeActivity)
+        }
+    }
+    //注册非必要按钮
+    private fun registerMoreActions(){
+        //点击图标彩蛋
+        val DarkModeIcon = findViewById<ImageView>(R.id.sign_dark_mode)
+        DarkModeIcon.setOnClickListener {
+            notice("哼,哼,啊啊啊啊啊啊啊")
+        }
+    }
+    //注册主要操作区
+    private fun registerMainActions(){
+
+        //点击图片区域弹出菜单
+        imageViewDark = findViewById(R.id.imageDark)
+        imageViewLight = findViewById(R.id.imageLight)
+        imageViewDark?.setOnClickListener {
+            showOptionMenu()
+        }
+        imageViewLight?.setOnClickListener {
+            showOptionMenu()
+        }
+
+
         //按钮：选择/更改深色壁纸
         val ButtonSelectDarkWp = findViewById<TextView>(R.id.buttonChangeDark)
         ButtonSelectDarkWp.setOnClickListener {
-            mode_pictureSelect = "dark"
-            openGallery()
+            consoleLog("开始选择深色壁纸")
+            openGalleryToPick("dark")
         }
         //按钮：选择/更改浅色壁纸
         val ButtonSelectLightWp = findViewById<TextView>(R.id.buttonChangeLight)
         ButtonSelectLightWp.setOnClickListener {
-            mode_pictureSelect = "light"
-            openGallery()
+            consoleLog("开始选择浅色壁纸")
+            openGalleryToPick("light")
         }
+
+
         //按钮：返回桌面
         val ButtonSuperExit = findViewById<Button>(R.id.buttonSuperExit)
         ButtonSuperExit.setOnClickListener {
-            val intent = Intent(Intent.ACTION_MAIN)
-            intent.addCategory(Intent.CATEGORY_HOME)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-            exit(100)
+            moveTaskToBack(true)
+            //待添加分支：返回桌面时结束进程
         }
-        //按钮：切换深色壁纸
-        val ButtonSwitchDark = findViewById<Button>(R.id.buttonSwitchDark)
-        ButtonSwitchDark.setOnClickListener {
+        //按钮：切换到深色壁纸
+        ButtonSwitchDark = findViewById(R.id.buttonSwitchDark)
+        ButtonSwitchDark?.setOnClickListener {
             switchNow("dark")
         }
-        //按钮：切换浅色壁纸
-        val ButtonSwitchLight = findViewById<Button>(R.id.buttonSwitchLight)
-        ButtonSwitchLight.setOnClickListener {
+        //按钮：切换到浅色壁纸
+        ButtonSwitchLight = findViewById(R.id.buttonSwitchLight)
+        ButtonSwitchLight?.setOnClickListener {
             switchNow("light")
         }
         //按钮：添加快捷方式
         val ButtonAddTile = findViewById<Button>(R.id.buttonAddTile)
         ButtonAddTile.setOnClickListener {
             val currentTime = System.currentTimeMillis()
-            if (currentTime - lastClickTime < COOLDOWN_TIME_2) {
+            if (currentTime - lastClickMillis < CoolDownGap_createShortcut) {
                 return@setOnClickListener
             } else {
-                lastClickTime = currentTime
-                notice("请确保开启了创建快捷方式权限丨您也可使用磁贴",5000)
+                lastClickMillis = currentTime
+                notice("请确保开启了创建快捷方式权限丨您也可使用磁贴")
             }
             createShortcut()
 
@@ -187,7 +498,7 @@ class DarkModeActivity: AppCompatActivity() {
         val ButtonClearWp = findViewById<Button>(R.id.buttonClear)
         ButtonClearWp.setOnClickListener {
             clearWallPaper()
-            notice("已清除",2000)
+            notice("已清除")
         }
         //按钮：设置微动值
         val ButtonSetValue = findViewById<Button>(R.id.buttonSetValue)
@@ -211,112 +522,28 @@ class DarkModeActivity: AppCompatActivity() {
             }
 
         }
-        //按钮：立即设置（深色）（点击图片）
-        val CardViewDark = findViewById<CardView>(R.id.cardViewDark)
-        CardViewDark.setOnClickListener {
-            if (!DarkCoverShowing) {
-                DarkCoverShowing = true
-                val ButtonSetDarkFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
-                ButtonSetDarkFrame.visibility = View.VISIBLE
-                val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                if (sharedPreferences.contains("is_dark_wallpaper_set?")) {
-                    val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
-                    ButtonSetDark.text = "立即设置壁纸"
-                }else{
-                    val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
-                    ButtonSetDark.text = "立即选择图片"
-                }
-            }else{
-                DarkCoverShowing = false
-                val ButtonSetDarkFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
-                ButtonSetDarkFrame.visibility = View.GONE
-            }
-        }
-        val ButtonSetDark = findViewById<TextView>(R.id.buttonSetDark)
-        ButtonSetDark.setOnClickListener {
-            if (ButtonSetDark.text == "立即选择图片") {
-                mode_pictureSelect = "dark"
-                openGallery()
-            }else{
-                switchNow("dark")
-            }
-        }
-        //按钮：立即设置（浅色）（点击图片）
-        val CardViewLight = findViewById<CardView>(R.id.cardViewLight)
-        CardViewLight.setOnClickListener {
-            if (!LightCoverShowing){
-                LightCoverShowing = true
-                val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
-                ButtonSetLightFrame.visibility = View.VISIBLE
-                val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                if (sharedPreferences.contains("is_light_wallpaper_set?")) {
-                    val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
-                    ButtonSetLight.text = "立即设置壁纸"
-                }else{
-                    val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
-                    ButtonSetLight.text = "立即选择图片"
-                }
-            }else{
-                LightCoverShowing = false
-                val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
-                ButtonSetLightFrame.visibility = View.GONE
-            }
 
-        }
-        val ButtonSetLight = findViewById<TextView>(R.id.buttonSetLight)
-        ButtonSetLight.setOnClickListener {
-            if (ButtonSetLight.text == "立即选择图片") {
-                mode_pictureSelect = "light"
-                openGallery()
-            }else{
-                switchNow("light")
-            }
-        }
-
-
-    }//onCreate END
-
-    override fun onResume() {
-        super.onResume()
-        val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
-        val ButtonDarkLightFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
-        ButtonSetLightFrame.visibility = View.GONE
-        ButtonDarkLightFrame.visibility = View.GONE
     }
-
-    //Functions
-    private fun saveSwitchState(key: String, isChecked: Boolean) {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        sharedPreferences.edit {
-            putBoolean(key, isChecked)
-            apply()
-        }
+    //修改滚动区域顶部内边距
+    private fun updateNestTopPadding(topPadding: Int){
+        //consoleLog("updateNestTopPadding: 发起修改内边距")
+        NestedScrollArea.setPadding(0, topPadding, 0, 0)
     }
-
-    private fun restoreSwitchState(key: String) {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val isChecked = sharedPreferences.getBoolean(key, false)
-        if (key == "saveToPublic") {
-            Switch1.isChecked = isChecked
-        }
-        if (key == "slightmove") {
-            Switch2.isChecked = isChecked
-        }
-    }
-
+    //调用图片选择器
+    private var pickImageMode: String = ""
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK && result.data != null) {
-                val selectedImageUri = result.data?.data
-                selectedImageUri?.let { saveImage(it) }
-            }
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val selectedImageUri = result.data?.data
+            selectedImageUri?.let { saveImage(it, pickImageMode) }
         }
-
-    private fun openGallery() {
+    }
+    private fun openGalleryToPick(mode: String) {
+        pickImageMode = mode
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         pickImageLauncher.launch(intent)
     }
-
-    private fun saveImage(uri: Uri) {
+    //保存图片到应用内部储存 + 可选外部
+    private fun saveImage(uri: Uri, mode: String) {
         fun cropBitmap(bitmapScaled: Bitmap, x: Int, y: Int, width: Int, height: Int): Bitmap {
             return Bitmap.createBitmap(bitmapScaled, x, y, width, height)
         }
@@ -372,54 +599,43 @@ class DarkModeActivity: AppCompatActivity() {
                 bitmapScaled=cropBitmap(bitmapScaled,x,y,width,height)
             }
             //微动
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            if(Switch2.isChecked) {
-                if(sharedPreferences.contains("SlightValue")){
-                    val number = 0
-                    val x=0
-                    val y=sharedPreferences.getInt("SlightValue",number)
-                    val width=screenWidth
-                    val height=screenHeight-2*y
-                    bitmapScaled=cropBitmap(bitmapScaled,x,y,width,height)
-                } else {
-                    val x=0
-                    val y=50
-                    val width=screenWidth
-                    val height=screenHeight-100
-                    bitmapScaled=cropBitmap(bitmapScaled,x,y,width,height)
+            if(SettingsRequestCenter.get_PREFS_SlightMove_Clip(this@DarkModeActivity)) {
+                val x = 0
+                val y = SettingsRequestCenter.get_PREFS_SlightMove_value(this@DarkModeActivity)
+                val width = screenWidth
+                val height = screenHeight - 2 * y
+                bitmapScaled = cropBitmap(bitmapScaled,x,y,width,height)
+            } else {
+                    val x = 0
+                    val y = 50
+                    val width = screenWidth
+                    val height = screenHeight-100
+                    bitmapScaled = cropBitmap(bitmapScaled,x,y,width,height)
                 }
-            }
+
             return bitmapScaled
         }
         contentResolver.openInputStream(uri)?.use { inputStream ->
+            //解码图片实例
             val bitmap = BitmapFactory.decodeStream(inputStream)
             val bitmapForScale = bitmap.copy(Bitmap.Config.ARGB_8888, true)
             val croppedBitmap = info(bitmapForScale)
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            val whatMode = mode_pictureSelect
-            val fileName = when (whatMode) {
-                "dark" -> "selected_image_dark.jpg"
-                "light" -> "selected_image_light.jpg"
-                else -> "selected_image_default.jpg"
-            }
-            val fileDir = File(filesDir, "images")
-            if (!fileDir.exists()) {
-                fileDir.mkdirs()
-            }
-            val file = File(fileDir, fileName)
+            //取文件实例
+            val file = wrapFile(this,mode = mode)
+            //保存图片到App内部储存
+            consoleLog("saveImage: 开始保存图片到App内部储存 path:${file.path} name:${file.name} absolutePath:${file.absolutePath} ")
             FileOutputStream(file).use { outputStream ->
                 croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
             }
-            if (Switch1.isChecked) {
+            //保存图片到外部相册
+            if (SettingsRequestCenter.get_PREFS_Save_Clip_Out(this@DarkModeActivity)) {
+                //指定外部路径并保存
                 val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                     put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/使用过的壁纸")
                 }
-                val imageUri = contentResolver.insert(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    contentValues
-                )
+                val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 imageUri?.let {
                     val outputStream: OutputStream? = contentResolver.openOutputStream(it)
                     outputStream?.use { stream ->
@@ -427,312 +643,391 @@ class DarkModeActivity: AppCompatActivity() {
                     }
                 }
             }
-            //写入参数：是否已设置
-            when (whatMode) {
+            //在设置清单中写入标志位
+            when (mode) {
                 "dark" -> {
-                    sharedPreferences.edit {
-                        putBoolean("is_dark_wallpaper_set?", true)
-                        apply()
-                    }
-                    loadImage()
+                    //保存标记
+                    SettingsRequestCenter.set_State_dark_paper_set(this@DarkModeActivity, true)
+                    //立即加载到预览视图
+                    loadImage("dark",push = true)
                 }
                 "light" -> {
-                    sharedPreferences.edit {
-                        putBoolean("is_light_wallpaper_set?", true)
-                        apply()
-                    }
-                    loadImage()
+                    //保存标记
+                    SettingsRequestCenter.set_State_light_paper_set(this@DarkModeActivity, true)
+                    //立即加载到预览视图
+                    loadImage("light",push = true)
                 }
             }
         }
     }
-
+    //加载本地图片
     @SuppressLint("CutPasteId")
-    private fun loadImage() {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        if (sharedPreferences.contains("is_dark_wallpaper_set?") && (!sharedPreferences.contains("Clear"))) {
-            val fileName = "selected_image_dark.jpg"
-            val fileDir = File(filesDir, "images")
-            val file = File(fileDir, fileName)
-            if (file.exists()) {
-                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                val imageView = findViewById<ImageView>(R.id.imageDark)
-                imageView.setImageBitmap(bitmap)
-            }
-        }
-        if (sharedPreferences.contains("is_light_wallpaper_set?") && (!sharedPreferences.contains("Clear"))) {
-            val fileName = "selected_image_light.jpg"
-            val fileDir = File(filesDir, "images")
-            val file = File(fileDir, fileName)
+    private fun loadImage(mode: String, push: Boolean = false): Pair<Boolean, Bitmap?> {
+        when(mode){
+            //深色壁纸
+            "dark" -> {
+                consoleLog("loadImage: 开始加载深色壁纸")
+                //直接取文件实例
+                val file = wrapFile(this,mode = mode)
+                if (file.exists()) {
+                    var bitmap: Bitmap?
+                    try{
+                        bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                        //推送到显示
+                        consoleLog("loadImage: 加载深色壁纸成功")
 
-            if (file.exists()) {
-                val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                val imageView = findViewById<ImageView>(R.id.imageLight)
-                imageView.setImageBitmap(bitmap)
-            }
-        }
-        if (sharedPreferences.contains("Clear")) {
-            val imageView1 = findViewById<ImageView>(R.id.imageLight)
-            val bitmap1 = BitmapFactory.decodeResource(resources, R.drawable.ic_notset)
-            imageView1.setImageBitmap(bitmap1)
+                        if(push) pushToImageView(bitmap,mode)
 
-            val imageView2 = findViewById<ImageView>(R.id.imageDark)
-            val bitmap2 = BitmapFactory.decodeResource(resources, R.drawable.ic_notset)
-            imageView2.setImageBitmap(bitmap2)
-            sharedPreferences.edit {
-                remove("Clear")
-                apply()
-            }
-        }
-
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun preCheck() {
-        //准备工作1：申请储存
-        //无需申请此权限，使用媒体库api来保存图片到外部即可！
-
-        //准备工作2：检查壁纸是否设置，动态切换样式
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        if (sharedPreferences.contains("is_dark_wallpaper_set?")) {
-            loadImage()
-        }
-
-        if (sharedPreferences.contains("is_light_mode_set?")) {
-            loadImage()
-        }
-
-        if (!sharedPreferences.contains("whatmode?")) {
-            sharedPreferences.edit {
-                putString("whatmode?", "")
-                apply()
-            }
-        }
-        //准备工作2.5:状态重置
-        if (sharedPreferences.contains("running")) {
-            sharedPreferences.edit {
-                remove("running")
-                apply()
-            }
-        }
-        //准备工作3：读取设置
-        val showGuidance = sharedPreferences.getInt("showGuidance", 0)
-        val showGuidanceAnimation = sharedPreferences.getInt("showGuidanceAnimation", 0)
-        killWhenExit = sharedPreferences.getInt("killWhenExit", 0)
-
-        //后级工作：动态切换文字
-        if (!sharedPreferences.contains("is_dark_wallpaper_set?")) {
-            val buttonChangeDark = findViewById<TextView>(R.id.buttonChangeDark)
-            buttonChangeDark.text = "选择"
-
-        }
-        if (!sharedPreferences.contains("is_light_wallpaper_set?")) {
-            val buttonChangeLight = findViewById<TextView>(R.id.buttonChangeLight)
-            buttonChangeLight.text = "选择"
-        }
-        //Description
-        if (showGuidance == 1) {
-            val composeView = findViewById<ComposeView>(R.id.compose1)
-            composeView.setContent {
-                var Y =300
-                var T = 300
-                if (showGuidanceAnimation==0){
-                    Y =0
-                    T = 0
-                }
-                var isVisible by remember { mutableStateOf(false) }
-                LaunchedEffect(Unit) {
-                    isVisible = true
-                }
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = slideInVertically(
-                        initialOffsetY = { Y },
-                        animationSpec = tween(durationMillis = T)
-                    )
-                ){
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                            .background(colorResource(id = R.color.HeadBackground))
-                            .border(
-                                1.dp,
-                                colorResource(id = R.color.HeadText),
-                                RoundedCornerShape(16.dp)
-                            )
-                            .padding(10.dp)
-
-                    ) {
-                        Text(
-                            text = getString(R.string.description_darkmode),
-                            style = TextStyle(fontSize = 14.sp),
-                            color = colorResource(id = R.color.HeadText),
-                        )
+                        return Pair(true,bitmap)
+                    }catch (_: Exception){
+                        consoleLog("loadImage: 加载深色壁纸失败")
+                        return Pair(false,null)
                     }
+                }else{
+                    consoleLog("loadImage: 深色壁纸文件不存在。复盘：Dir:${file.parentFile},FileName:${file.name}")
+
+                    return Pair(false,null)
                 }
             }
+            //浅色壁纸
+            "light" -> {
+                consoleLog("loadImage: 开始加载浅色壁纸")
+                //直接取文件实例
+                val file = wrapFile(this,mode = mode)
+                if (file.exists()) {
+                    var bitmap: Bitmap?
+                    try{
+                        bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                        //推送到显示
+                        consoleLog("loadImage: 加载浅色壁纸成功")
+
+                        if(push) pushToImageView(bitmap,mode)
+
+                        return Pair(true,bitmap)
+                    }catch (_: Exception){
+                        consoleLog("loadImage: 加载浅色壁纸失败")
+                        return Pair(false,null)
+                    }
+                }else{
+                    consoleLog("loadImage: 浅色壁纸文件不存在。复盘：Dir:${file.parentFile},FileName:${file.name}")
+                    return Pair(false,null)
+                }
+            }
+            //其他错误传参
+            else -> {
+                consoleLog("loadImage: 收到无效的参数,期望参数为\"dark\"或\"light\"")
+                return Pair(false,null)
+            }
         }
-
-
-
     }
+    //推送到显示区域
+    private var imageViewDark: ImageView? = null
+    private var imageViewLight: ImageView? = null
+    private fun pushToImageView(bitmap: Bitmap,mode: String){
+        imageViewDark = findViewById(R.id.imageDark)
+        imageViewLight = findViewById(R.id.imageLight)
 
+        when(mode){
+            "dark" -> {
+                imageViewDark?.setImageBitmap(bitmap)
+            }
+            "light" -> {
+                imageViewLight?.setImageBitmap(bitmap)
+            }
+        }
+    }
+    private fun clearImageView(){
+        imageViewDark?.setImageBitmap(null)
+        imageViewLight?.setImageBitmap(null)
+        updateImageAreaActionText(0,0)
+    }
+    //清除壁纸(图片实例+标志位)
     private fun clearWallPaper() {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        sharedPreferences.edit {
-            remove("is_dark_wallpaper_set?")
-            remove("is_light_wallpaper_set?")
-            putString("Clear", "")
-            apply()
-            loadImage()
+        //清除视图内图片
+        clearImageView()
+        //清理标志位
+        SettingsRequestCenter.set_State_dark_paper_set(this@DarkModeActivity, false)
+        SettingsRequestCenter.set_State_light_paper_set(this@DarkModeActivity, false)
+        //删除图片实例
+        deletePaper()
+    }
+    private fun deletePaper(target: String = "") {
+        //Dir实例
+        val dir = File(img_directory)
+        //未传入参数时全删了
+        if(target.isEmpty()){
+            //直接全删了然后重新建文件夹
+            if (dir.exists() && dir.isDirectory) {
+                val success = dir.deleteRecursively()
+                if (success) {
+                    dir.mkdirs()
+                }
+            } else {
+                dir.mkdirs()
+            }
+        }else{
+            //根据传入参数删除对应文件
+            val file = wrapFile(this,mode = target)
+            if (file.exists()) {
+                file.delete()
+            }
         }
-        val ButtonSetLightFrame = findViewById<FrameLayout>(R.id.buttonSetLightFrame)
-        val ButtonDarkLightFrame = findViewById<FrameLayout>(R.id.buttonSetDarkFrame)
-        ButtonSetLightFrame.visibility = View.GONE
-        ButtonDarkLightFrame.visibility = View.GONE
+    }
+    //初始化加载壁纸
+    private fun initLoadWallpapers(){
+        //读取标志位
+        val darkSet = SettingsRequestCenter.get_State_dark_paper_set(this@DarkModeActivity)
+        val lightSet = SettingsRequestCenter.get_State_light_paper_set(this@DarkModeActivity)
+        //根据标志位加载壁纸
+        if (darkSet){
+            consoleLog("initLoadWallpapers: 加载深色壁纸")
+            loadImage("dark",push = true)
+        }else{
+            consoleLog("initLoadWallpapers: 深色壁纸标记为未设置,跳过加载")
+        }
+        if (lightSet){
+            consoleLog("initLoadWallpapers: 加载浅色壁纸")
+            loadImage("light",push = true)
+        }else{
+            consoleLog("initLoadWallpapers: 浅色壁纸标记为未设置,跳过加载")
+        }
+        //更新操作区指示文字
+        val dark = if (darkSet) 1 else 0
+        val light = if (lightSet) 1 else 0
+        updateImageAreaActionText(dark,light)
+
+    }
+    //修改操作区指示文字
+    private var actionText_dark: TextView? = null
+    private var actionText_light: TextView? = null
+    private fun updateImageAreaActionText(dark: Int = -1,light: Int = -1){
+        actionText_dark = findViewById(R.id.buttonChangeDark)
+        actionText_light = findViewById(R.id.buttonChangeLight)
+        //传入默认值时自己加载
+        if (dark == -1){
+            if (SettingsRequestCenter.get_State_dark_paper_set(this@DarkModeActivity)){
+                actionText_dark?.text = "修改"
+            }else{
+                actionText_dark?.text = "设置"
+            }
+        }
+        if (light == -1){
+            if (SettingsRequestCenter.get_State_light_paper_set(this@DarkModeActivity)){
+                actionText_light?.text = "修改"
+            }else{
+                actionText_light?.text = "设置"
+            }
+        }
+        //传入具体值时直接设置
+        if (dark == 0){
+            actionText_dark?.text = "选择"
+        }else if(dark == 1){
+            actionText_dark?.text = "修改"
+        }
+        if (light == 0){
+            actionText_light?.text = "选择"
+        }else if(light == 1){
+            actionText_light?.text = "修改"
+        }
+
+    }
+    //弹出选项菜单
+    private fun showOptionMenu(){
+
+    }
+    //打开设置面板
+    private fun startSettingFragment(){
+
+    }
+    //设置系统壁纸核心方法
+    private var wallpaperManager: WallpaperManager? = null
+    private fun applySystemWallpaper(bitmap: Bitmap){
+        wallpaperManager = WallpaperManager.getInstance(this@DarkModeActivity)
+        //执行设置(需要收集各系统执行情况,扩展方法自定义)
+        wallpaperManager?.setBitmap(
+            bitmap, null, false,
+            WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
+        )
+    }
+    //包装文件
+    private val name_dark_img = "dark_wallpaper_img.jpg"
+    private val name_light_img = "light_wallpaper_img.jpg"
+    private val name_error_img = "error_wallpaper_img.jpg"
+    private val img_directory = "darkmode/current_wallpaper"
+    private fun wrapFile(context: Context, dir: String = "", name: String = "", mode: String = ""): File {
+        //先保证路径存在
+        fun makeSureDirExist(){
+            val fileDir = File(context.filesDir, img_directory)
+            if (!fileDir.exists()) {
+                fileDir.mkdirs()
+            }
+        }
+        makeSureDirExist()
+        //根据传入参数返回对应文件
+        if(dir != "" && name != ""){
+            return File(context.filesDir.resolve(dir),name)
+        }else{
+            if(mode == "dark"){
+                val file = File(context.filesDir.resolve(img_directory),name_dark_img)
+                return file
+            }else if(mode == "light"){
+                val file = File(context.filesDir.resolve(img_directory),name_light_img)
+                return file
+            }else{
+                val file = File(context.filesDir.resolve(img_directory),name_error_img)
+                return file
+            }
+        }
     }
 
+    //功能执行函数
+    //倒计时后退出到桌面
+    private fun autoFinish(){
+        //先退回桌面
+        lifecycleScope.launch {
+            delay(2000)
+            moveTaskToBack(true)
+            //进程自杀：方案应改为直接结束虚拟机进程
+            /*Handler(Looper.getMainLooper()).postDelayed({
+            finish()
+        }, 3000)
+
+         */
+        }
+    }
+    //立即切换到指定模式壁纸
     @OptIn(DelicateCoroutinesApi::class)
+    private var ButtonSwitchDark: Button? = null
+    private fun switchNowToDark(exitAfter: Boolean = false){
+        //先确认有没有图,修改按钮提示文字
+        if (SettingsRequestCenter.get_State_dark_paper_set(this@DarkModeActivity)) {
+            //再确认文件是否存在
+            val (success,bitmap) = loadImage("dark")
+            if (success){
+                if (bitmap != null){
+                    //应用到系统
+                    setButtonInfo("dark","正在应用深色壁纸,请稍等",true)
+                    lifecycleScope.launch (Dispatchers.IO){
+                        //执行应用
+                        applySystemWallpaper(bitmap)
+                        //自动退出
+                        if (exitAfter) autoFinish()
+                    }
+                }else{
+                    setButtonInfo("dark","深色壁纸读取失败",true)
+                    endActionGapJob()
+                }
+            }else{
+                setButtonInfo("dark","深色壁纸读取失败",true)
+                endActionGapJob()
+            }
+        }else{
+            setButtonInfo("dark","您似乎并未设置深色壁纸",false)
+            noPaperNoticeJob()
+        }
+    }
+    private var ButtonSwitchLight: Button? = null
+    private fun switchNowToLight(exitAfter: Boolean = false){
+        //先确认有没有图,修改按钮提示文字
+        if (SettingsRequestCenter.get_State_light_paper_set(this@DarkModeActivity)) {
+            //再确认文件是否存在
+            val (success,bitmap) = loadImage("light")
+            if (success){
+                if (bitmap != null){
+                    //应用到系统
+                    setButtonInfo("light","正在应用浅色壁纸,请稍等",true)
+                    //
+                    lifecycleScope.launch (Dispatchers.IO){
+                        //执行应用
+                        applySystemWallpaper(bitmap)
+                        //自动退出
+                        if (exitAfter) autoFinish()
+                    }
+                }else{
+                    setButtonInfo("light","浅色壁纸读取失败",true)
+                    endActionGapJob()
+                }
+            }else{
+                setButtonInfo("light","浅色壁纸读取失败",true)
+                endActionGapJob()
+            }
+        }else{
+            setButtonInfo("light","您似乎并未设置浅色壁纸",false)
+            noPaperNoticeJob()
+        }
+    }
+    //立即切换到指定模式壁纸入口
     private fun switchNow(mode: String) {
+        //锁
+        if (state_paper_apply_running) {
+            showCustomToast("请勿重复点击")
+            return
+        }
+        actionGapJob()
+        //执行切换
         if (mode == "dark") {
-            findViewById<Button>(R.id.buttonSwitchDark).text = "请等待应用自行退出，避免卡顿"
-            findViewById<Button>(R.id.buttonSwitchDark).setBackgroundColor(ContextCompat.getColor(this,R.color.ButtonBgHighlight))
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            if (sharedPreferences.contains("running")) {
-                runOnUiThread {
-                    findViewById<Button>(R.id.buttonSwitchDark).text = "请勿重复点击,否则易导致界面卡死!"
-                    findViewById<Button>(R.id.buttonSwitchDark).setBackgroundColor(ContextCompat.getColor(this,R.color.ButtonBgVeryHeavy))
-                }
-                return
-            }
-
-            GlobalScope.launch {
-                sharedPreferences.edit {
-                    putString("running", "1")
-                    apply()
-                }
-                if (sharedPreferences.contains("is_dark_wallpaper_set?")) {
-                    val fileName = "selected_image_dark.jpg"
-                    val fileDir = File(filesDir, "images")
-                    val file = File(fileDir, fileName)
-                    if (file.exists()) {
-                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        val wallpaperManager = WallpaperManager.getInstance(this@DarkModeActivity)
-                        wallpaperManager.setBitmap(
-                            bitmap, null, false,
-                            WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
-                        )
-                    }
-                    val intent = Intent(Intent.ACTION_MAIN)
-                    intent.addCategory(Intent.CATEGORY_HOME)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
-                    sharedPreferences.edit {
-                        remove("running")
-                        commit()
-                    }
-                    runOnUiThread {
-                        finish()
-                    }
-                    GlobalScope.launch(Dispatchers.IO) {
-                        exit(1000)
-                    }
-                } else {
-                    runOnUiThread {
-                        findViewById<Button>(R.id.buttonSwitchDark).text = "您未设置深色模式壁纸"
-                    }
-                    sharedPreferences.edit {
-                        remove("running")
-                        apply()
-                    }
-                }
-            }
-            return
-        }
-        if (mode == "light") {
-            findViewById<Button>(R.id.buttonSwitchLight).text = "请等待应用自行退出，避免卡顿"
-            findViewById<Button>(R.id.buttonSwitchLight).setBackgroundColor(ContextCompat.getColor(this,R.color.ButtonBgHighlight))
-
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            if (sharedPreferences.contains("running")) {
-                runOnUiThread {
-                    findViewById<Button>(R.id.buttonSwitchLight).text = "请勿重复点击,否则易导致界面卡死!"
-                    findViewById<Button>(R.id.buttonSwitchLight).setBackgroundColor(ContextCompat.getColor(this,R.color.ButtonBgVeryHeavy))
-                }
-                return
-            }
-
-            GlobalScope.launch(Dispatchers.IO) {
-                sharedPreferences.edit {
-                    putString("running", "1")
-                    apply()
-                }
-                val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                if (sharedPreferences.contains("is_light_wallpaper_set?")) {
-                    val fileName = "selected_image_light.jpg"
-                    val fileDir = File(filesDir, "images")
-                    val file = File(fileDir, fileName)
-                    if (file.exists()) {
-                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        val wallpaperManager = WallpaperManager.getInstance(this@DarkModeActivity)
-                        wallpaperManager.setBitmap(
-                            bitmap, null, false,
-                            WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
-                        )
-                    }
-                    val intent = Intent(Intent.ACTION_MAIN)
-                    intent.addCategory(Intent.CATEGORY_HOME)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
-                    sharedPreferences.edit {
-                        remove("running")
-                        commit()
-                    }
-                    runOnUiThread {
-                        finish()
-                    }
-                    GlobalScope.launch(Dispatchers.IO) {
-                        exit(1000)
-                    }
-
-                } else {
-                    runOnUiThread {
-                        findViewById<Button>(R.id.buttonSwitchLight).setText("您未设置浅色模式壁纸")
-                    }
-                    sharedPreferences.edit {
-                        remove("running")
-                        apply()
-                    }
-                }
-            }
-            return
+            switchNowToDark(exitAfter = true)
+        } else if (mode == "light") {
+            switchNowToLight(exitAfter = true)
         }
     }
-
-    private fun setValue(content:String){
-        if (content.isEmpty()){
-            notice("未填写有效内容",2000)
-            return
-        }
-        val number = content.toInt()
-        if(number<=200){
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            sharedPreferences.edit{
-                putInt("SlightValue",number)
-            }
-            notice("已设置为$number",2000)
-            return
-        }
-        else{
-            notice("数值过大",2000)
-            return
+    //执行间隔控制
+    private var state_paper_apply_running = false
+    private var actionGapJob: Job? = null
+    private fun actionGapJob() {
+        actionGapJob?.cancel()
+        state_paper_apply_running = true
+        actionGapJob = lifecycleScope.launch {
+            delay(3000)
+            resetButtonInfo()
+            state_paper_apply_running = false
         }
     }
+    private fun endActionGapJob(){
+        actionGapJob?.cancel()
+        state_paper_apply_running = false
+    }
+    //未设置壁纸控制
+    private var noPaperNoticeJob: Job? = null
+    private fun noPaperNoticeJob(){
+        noPaperNoticeJob?.cancel()
+        noPaperNoticeJob = lifecycleScope.launch {
+            delay(2000)
+            resetButtonInfo()
+        }
+    }
+    //重置按钮
+    private fun resetButtonInfo(){
+        //切换文字
+        ButtonSwitchDark?.text = getString(R.string.dark_mode_paper_apply_notice_dark)
+        ButtonSwitchLight?.text = getString(R.string.dark_mode_paper_apply_notice_light)
+        //切换按钮背景颜色
+        ButtonSwitchDark?.backgroundTintList = ContextCompat.getColorStateList(this, R.color.ButtonBg)
+        ButtonSwitchLight?.backgroundTintList = ContextCompat.getColorStateList(this, R.color.ButtonBg)
+    }
+    //设置按钮
+    private fun setButtonInfo(target: String,text:String,highlight: Boolean = false){
+        //切换文字
+        when(target){
+            "dark" -> {
+                ButtonSwitchDark?.text = text
+                if(highlight){
+                    ButtonSwitchDark?.backgroundTintList = ContextCompat.getColorStateList(this, R.color.ButtonBgHighlight)
+                }
+            }
+            "light" -> {
+                ButtonSwitchLight?.text = text
+                if(highlight){
+                    ButtonSwitchLight?.backgroundTintList = ContextCompat.getColorStateList(this, R.color.ButtonBgHighlight)
+                }
+            }
+        }
 
+    }
+    //创建桌面快捷方式
     private fun createShortcut(){
+        //
         val shortcutManager = getSystemService(ShortcutManager::class.java)
-
         val shortcutIntent = Intent(this, DarkModePure::class.java).apply {
             action = Intent.ACTION_MAIN
             putExtra("FROM_HOME",true)
@@ -747,36 +1042,52 @@ class DarkModeActivity: AppCompatActivity() {
         shortcutManager?.requestPinShortcut(shortcut, null)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private fun exit(time:Long){
-        GlobalScope.launch {
-            delay(time)
-            if (killWhenExit==1){
-                finishAndRemoveTask()
-                val pid = Process.myPid()
-                Process.killProcess(pid)
+
+
+    private fun setValue(content:String){
+        if (content.isEmpty()){
+            notice("未填写有效内容")
+            return
+        }
+        val number = content.toInt()
+        if(number<=200){
+            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            sharedPreferences.edit{
+                putInt("SlightValue",number)
             }
+            notice("已设置为$number")
+            return
+        }
+        else{
+            notice("数值过大")
+            return
         }
     }
 
-    private var showNoticeJob: Job? = null
-    private fun showNoticeJob(text: String, duration: Long) {
-        showNoticeJob?.cancel()
-        showNoticeJob = lifecycleScope.launch {
-            val notice = findViewById<TextView>(R.id.notice)
-            val noticeCard = findViewById<CardView>(R.id.noticeCard)
-            noticeCard.visibility = View.VISIBLE
-            notice.text = text
-            delay(duration)
-            noticeCard.visibility = View.GONE
+
+
+
+
+    //集中初始化
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun init() {
+        //共享视图初始化
+        NestedScrollArea = findViewById(R.id.NestedScrollArea)
+
+    }
+    //显示短通知
+    private fun notice(text: String) {
+        showCustomToast(text)
+    }
+    //统一日志控制
+    private fun consoleLog(msg: String, mark: Boolean = true) {
+        if (mark) {
+            Log.d("SuMing", msg)
         }
     }
-    private fun notice(text: String, duration: Long) {
-        showNoticeJob(text, duration)
-    }
 
 
-}//class END
+}
 
 
 
