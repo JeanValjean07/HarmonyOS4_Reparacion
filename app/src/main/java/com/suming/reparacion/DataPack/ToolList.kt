@@ -1,4 +1,4 @@
-package com.suming.reparacion.data
+package com.suming.reparacion.DataPack
 
 object ToolList {
 
@@ -22,34 +22,34 @@ object ToolList {
             id = 3,
             name = "音量控制",
             description = "控制响度以实现细化音量调节",
-            intent = "MANAGER_INTENT_VOLUME_CONTROL",
+            intent = "MANAGER_INTENT_NONE",
 
             ),
         ToolPackage(
             id = 4,
             name = "屏幕手电",
             description = "使用屏幕作为手电灯并快捷调节亮度",
-            intent = "MANAGER_INTENT_SCREEN_FLASHLIGHT",
+            intent = "MANAGER_INTENT_NONE",
 
             ),
         ToolPackage(
             id = 5,
             name = "屏幕时钟",
             description = "全屏幕显示时钟",
-            intent = "MANAGER_INTENT_SCREEN_CLOCK_SWITCH",
+            intent = "MANAGER_INTENT_NONE",
 
             ),
         ToolPackage(
             id = 6,
             name = "桌面时钟磁贴",
             description = "替换系统自带的时钟磁贴样式",
-            intent = "MANAGER_INTENT_SCREEN_CLOCK_SWITCH",
+            intent = "MANAGER_INTENT_NONE",
 
             ),
         ToolPackage(
             id = 7,
-            name = "暂定",
-            description = "暂未实现",
+            name = "应用列表",
+            description = "查看已安装的应用列表",
             intent = "MANAGER_INTENT_NONE",
 
             ),

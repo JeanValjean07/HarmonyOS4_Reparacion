@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SnippetFolder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -74,9 +75,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
-import com.suming.reparacion.data.ToolList
-import com.suming.reparacion.data.ToolPackage
-import com.suming.reparacion.HelperTools.showCustomToast
+import com.suming.reparacion.ActivityComponents.MainViewModel
+import com.suming.reparacion.DataPack.ToolList
+import com.suming.reparacion.DataPack.ToolPackage
+import com.suming.reparacion.AddonTools.showCustomToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -108,6 +110,9 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     fun ComposeRoot(toolsList: List<ToolPackage>, mainViewModel: MainViewModel) {
+        //在root中取颜色模式
+        isDarkMode = isSystemInDarkTheme()
+        ColorPack = if (isDarkMode) DarkColorScheme else LightColorScheme
         //使用Box作为根布局
         Box(modifier = Modifier.fillMaxSize()) {
 
@@ -141,8 +146,6 @@ class MainActivity : AppCompatActivity() {
                     topBarHeight = height
                 })
         }
-
-
     }
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -158,14 +161,9 @@ class MainActivity : AppCompatActivity() {
                 },
             color = Color.Transparent,
         ) {
-
-            val darkTheme: Boolean = isSystemInDarkTheme()
-            val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -179,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         CircleButton(
                             onClick = { exitApp() },
-                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -191,26 +189,24 @@ class MainActivity : AppCompatActivity() {
                                 Icons.Filled.Clear,
                                 contentDescription = "退出",
                                 modifier = Modifier.background(Color.Transparent),
-                                tint = colorScheme.secondary
+                                tint = ColorPack.secondary
                             )
                         }
-
                         Text(
                             text = "补全计划",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colorScheme.primary,
-                            modifier = Modifier.padding(start = 5.dp)
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
                         )
                     }
-
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         CircleButton(
                             onClick = { startGuide() },
-                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -222,13 +218,12 @@ class MainActivity : AppCompatActivity() {
                                 Icons.Filled.SnippetFolder,
                                 contentDescription = "指南",
                                 modifier = Modifier.background(Color.Transparent),
-                                tint = colorScheme.secondary
+                                tint = ColorPack.secondary
                             )
                         }
-
                         CircleButton(
                             onClick = { startSetting() },
-                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -239,24 +234,12 @@ class MainActivity : AppCompatActivity() {
                             Icon(
                                 Icons.Filled.Settings,
                                 contentDescription = "设置",
-                                tint = colorScheme.secondary
+                                tint = ColorPack.secondary
                             )
                         }
                     }
-
                 }
-
-                //调试用线
-                /*
-                HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth(),
-                    thickness = 0.2.dp,
-                    color = Color.Gray.copy(alpha = 0.1f)
-                )
-
-                 */
             }
-
         }
     }
     @Composable
@@ -300,10 +283,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     @Composable
-    fun BrushArea(modifier: Modifier = Modifier, height: Dp = 110.dp) {
-        val darkTheme: Boolean = isSystemInDarkTheme()
-        val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-        //
+    fun BrushArea(modifier: Modifier = Modifier, height: Dp = 90.dp) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -311,13 +291,9 @@ class MainActivity : AppCompatActivity() {
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            colorScheme.surface.copy(alpha = 0.90f),
-                            colorScheme.surface.copy(alpha = 0.80f),
-                            colorScheme.surface.copy(alpha = 0.60f),
-                            colorScheme.surface.copy(alpha = 0.30f),
-                            colorScheme.surface.copy(alpha = 0f)
+                            ColorPack.surface.copy(alpha = 0.90f),
+                            ColorPack.surface.copy(alpha = 0.0f)
                         ),
-                        startY = 30f,
                     )
                 )
         )
@@ -326,14 +302,11 @@ class MainActivity : AppCompatActivity() {
     fun GlobalBackPic(){
         //放置一个全屏底部区域，未来支持设置自定义壁纸
 
-        val darkTheme: Boolean = isSystemInDarkTheme()
-        val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .background(colorScheme.surface)
+                .background(ColorPack.surface)
         )
 
 
@@ -366,8 +339,6 @@ class MainActivity : AppCompatActivity() {
     }
     @Composable
     fun ToolCard(name: String, description: String, onClick: () -> Unit) {
-        val darkTheme: Boolean = isSystemInDarkTheme()
-        val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -383,7 +354,7 @@ class MainActivity : AppCompatActivity() {
                 color = Color.Gray.copy(alpha = 0.1f)
             ),
             colors = CardDefaults.cardColors(
-                containerColor = colorScheme.background,
+                containerColor = ColorPack.background,
             ),
             onClick = onClick
         ) {
@@ -395,7 +366,7 @@ class MainActivity : AppCompatActivity() {
                     text = name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
-                    color = colorScheme.primary
+                    color = ColorPack.primary
                 )
                 //大小标题间距
                 Spacer(modifier = Modifier.height(4.dp))
@@ -403,7 +374,7 @@ class MainActivity : AppCompatActivity() {
                 Text(
                     text = description,
                     fontSize = 12.sp,
-                    color = colorScheme.secondary
+                    color = ColorPack.secondary
                 )
             }
         }
@@ -435,6 +406,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
     //composable颜色配置
+    private var isDarkMode: Boolean = false
+    private lateinit var ColorPack: ColorScheme
     private val LightColorScheme = lightColorScheme(
         //全局底色
         surface = Color(0xFFFFFFFF),

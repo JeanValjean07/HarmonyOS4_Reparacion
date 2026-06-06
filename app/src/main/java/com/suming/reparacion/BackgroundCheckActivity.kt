@@ -62,13 +62,6 @@ class BackgroundCheckActivity : AppCompatActivity() {
 
 
 
-
-
-
-
-
-
-
     } //onCreate
 
 

@@ -7,7 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.suming.reparacion.HelperTools.showCustomToast
+import com.suming.reparacion.AddonTools.showCustomToast
+import com.suming.reparacion.FunctionalPack.ApplicationAccountant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -50,7 +51,7 @@ class ApplicationManager: AppCompatActivity() {
     private fun mainThreadEntrance(){
         coroutine_read_application.launch {
             //读取应用列表
-            val appInfoList = ApplicationEngin(this@ApplicationManager).getApplicationList()
+            val appInfoList = ApplicationAccountant(this@ApplicationManager).getApplicationList()
 
             //如果仅能读到自己,则需要提示打开权限
             if (appInfoList.size == 1 && appInfoList[0].appPackageName == packageName) {

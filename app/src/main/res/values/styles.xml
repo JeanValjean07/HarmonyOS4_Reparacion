@@ -1,32 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="MainTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:fitsSystemWindows">false</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-    </style>
-    <style name="DarkModePureTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-    </style>
 
-    <style name="MainTheme2" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:fitsSystemWindows">true</item>
-        <item name="android:statusBarColor">@color/Background</item>
-    </style>
-
-    <style name="THEME_OSS" parent="Theme.Material3.DayNight">
+    <!-- Activity主题 -->
+    <!-- 基础Activity主题-移除顶栏 -->
+    <style name="BASIC_ACTIVITY_NO_BAR" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:fitsSystemWindows">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
-    <!-- 基础主题-移除顶栏 -->
-    <style name="BASIC_NO_BAR" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:fitsSystemWindows">false</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
+
+    <!-- Fragment主题 -->
+    <!-- 基础Fragment主题-移除顶栏 -->
+    <style name="BASIC_FRAGMENT_NO_BAR" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    <!--  基础Fragment-弹出动画 -->
+    <style name="ANIM_DialogFragment_SlideInOut" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="android:windowEnterAnimation">@anim/slide_in_vertical</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_vertical</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+    <style name="ANIM_DialogFragment_SlideInOutHorizontal" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="android:windowEnterAnimation">@anim/slide_in_horizontal</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_horizontal</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
     </style>
 
 

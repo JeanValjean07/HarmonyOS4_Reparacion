@@ -1,4 +1,4 @@
-package com.suming.reparacion
+package com.suming.reparacion.ActivityComponents
 
 import androidx.lifecycle.ViewModel
 

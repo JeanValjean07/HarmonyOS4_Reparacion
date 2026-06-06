@@ -1,4 +1,4 @@
-package com.suming.reparacion.data
+package com.suming.reparacion.DataPack
 
 data class ToolPackage(
     //基本字段

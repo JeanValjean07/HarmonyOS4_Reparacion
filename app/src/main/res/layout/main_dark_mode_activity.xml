@@ -9,7 +9,8 @@
     android:background="@color/Background"
     tools:context=".DarkModeActivity"
     tools:ignore="HardcodedText">
-    <!-- 顶部栏 -->
+
+    <!-- 顶部栏(compose搭建) -->
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/TopBarCompose"
         android:layout_width="match_parent"
@@ -17,8 +18,7 @@
         android:elevation="10dp"
         />
 
-
-    <!-- 滚动区域 -->
+    <!-- ContentArea -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/NestedScrollArea"
         android:layout_width="match_parent"
@@ -38,6 +38,7 @@
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="2dp"
+                android:backgroundTint="@color/ContentCard_Background"
                 app:cardCornerRadius="15dp"
                 app:cardElevation="2dp">
                 <LinearLayout
@@ -69,77 +70,6 @@
                     </HorizontalScrollView>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
-            <!-- 开关卡 -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginTop="2dp"
-                app:cardCornerRadius="15dp"
-                app:cardElevation="2dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-                    <!--  开关1 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:orientation="horizontal"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="10dp"
-                            android:layout_weight="1"
-                            android:gravity="center_vertical"
-                            android:text="选图时将裁剪或压缩后的壁纸保存到相册"
-                            android:textColor="@color/SwitchText"
-                            android:textSize="13sp"/>
-                        <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/switchToGallery"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
-                            android:layout_weight="0"
-                            app:trackTint="@color/switch_track_color"
-                            app:thumbTint="@color/switch_thumb_color"/>
-                    </LinearLayout>
-                    <!--  开关2 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:orientation="horizontal"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="10dp"
-                            android:layout_weight="1"
-                            android:gravity="center_vertical"
-                            android:text="选图时将壁纸裁剪为支持微动的尺寸"
-                            android:textColor="@color/SwitchText"
-                            android:textSize="13sp" />
-                        <androidx.appcompat.widget.SwitchCompat
-                            android:id="@+id/switchSlightMove"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="10dp"
-                            android:layout_weight="0"
-                            app:thumbTint="@color/switch_thumb_color"
-                            app:trackTint="@color/switch_track_color" />
-                    </LinearLayout>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
             <!-- 壁纸卡 -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -148,6 +78,7 @@
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="5dp"
                 android:layout_marginTop="2dp"
+                android:backgroundTint="@color/ContentCard_Background"
                 app:cardCornerRadius="15dp"
                 app:cardElevation="2dp">
                 <!--  壁纸展示区 -->
@@ -336,4 +267,5 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,14 +1,20 @@
-package com.suming.reparacion
+package com.suming.reparacion.ActivityComponents
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
+import android.app.Dialog
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -21,11 +27,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,19 +36,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SnippetFolder
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -56,7 +50,6 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -64,54 +57,143 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsControllerCompat
-import com.suming.reparacion.ActivityComponents.MainViewModel
-import com.suming.reparacion.AddonTools.showCustomToast
-import com.suming.reparacion.DataPack.ToolList
-import com.suming.reparacion.DataPack.ToolPackage
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-class NotificationManager: AppCompatActivity() {
-
-    @Suppress("DEPRECATION")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        //界面配置
-        enableEdgeToEdge()
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        //手动设置状态栏字体颜色
-        setStatusBarFontColor()
-
-
-        //工具列表
-        val toolsList = ToolList.toolsList
-
-        //托管给ComposableRoot
-        setContent {
-            ComposeRoot(toolsList)
-        }
-
+@SuppressLint("UseGetLayoutInflater", "InflateParams","SetTextI18n")
+class DarkModeFragment: DialogFragment() {
+    companion object {
+        fun newInstance(): DarkModeFragment = DarkModeFragment().apply { arguments = bundleOf(  ) }
     }
 
+    //共享ViewModel(暂未启用)
+    //private val vm: DarkModeViewModel by activityViewModels()
+    //composeRoot
+    private lateinit var ComposeRoot: ComposeView
 
+
+    @Suppress("DEPRECATION")
+    override fun onStart() {
+        super.onStart()
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
+            //横屏时隐藏状态栏
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                ViewCompat.setOnApplyWindowInsetsListener(dialog?.window?.decorView ?: return) { view, insets -> WindowInsetsCompat.CONSUMED }
+
+                /*
+                dialog?.window?.decorView?.post { dialog?.window?.insetsController?.let { controller ->
+                    controller.hide(WindowInsets.Type.statusBars())
+                    controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                } }
+
+                 */
+
+                //三星专用:显示到挖空区域
+                dialog?.window?.attributes?.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            } else {
+                dialog?.window?.decorView?.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+                                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        )
+            }
+            //
+            dialog?.window?.setWindowAnimations(R.style.ANIM_DialogFragment_SlideInOutHorizontal)
+            dialog?.window?.setDimAmount(0.1f)
+            dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            dialog?.window?.statusBarColor = Color(0x00000000).toArgb()
+            dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+        }
+        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+            dialog?.window?.setWindowAnimations(R.style.ANIM_DialogFragment_SlideInOut)
+            dialog?.window?.setDimAmount(0.1f)
+            dialog?.window?.statusBarColor = Color(0x00000000).toArgb()
+            dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+            if(context?.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_NO){
+                val decorView: View = dialog?.window?.decorView ?: return
+                decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //设置Fragment主题
+        setStyle(STYLE_NO_TITLE, R.style.BASIC_FRAGMENT_NO_BAR)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?, ): View? {
+        return inflater.inflate(R.layout.main_dark_mode_fragment, container, false)
+    }
+
+    @SuppressLint("UseGetLayoutInflater", "InflateParams", "SetTextI18n", "ClickableViewAccessibility", "CutPasteId")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        //集中初始化
+        init(view)
+
+        //设置composeRoot
+        ComposeRoot.setContent {
+            ComposeRoot()
+        }
+
+
+
+
+        //系统手势监听
+        lifecycleScope.launch {
+            //监听返回手势
+            dialog?.setOnKeyListener { _, keyCode, event ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                    dismiss()
+                    return@setOnKeyListener true
+                }
+                return@setOnKeyListener false
+            }
+        }
+    }//</onViewCreated>
+
+    //Lifecycle Functions
+    private fun init(view: View){
+        //初始化composeRoot
+        ComposeRoot = view.findViewById(R.id.fragment_compose_root)
+        //设置卡片高度
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.7).toInt()
+        }
+    }
+
+    //Compose Functions
     @Composable
-    fun ComposeRoot(toolsList: List<ToolPackage>) {
+    fun ComposeRoot() {
         //在root中取颜色模式
         isDarkMode = isSystemInDarkTheme()
         ColorPack = if (isDarkMode) DarkColorScheme else LightColorScheme
         //使用Box作为根布局
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(ColorPack.surface)) {
 
             //顶部栏高度值
             val statusBarHeight = WindowInsets.statusBars.getTop(LocalDensity.current)
@@ -131,18 +213,19 @@ class NotificationManager: AppCompatActivity() {
             )
 
             //最底层
-            GlobalBackPic()
 
-            //
-            NoticeListColumn(toolsList, topPaddingDp )
+            //content
 
 
             //最顶层
             BrushArea()
             AdvancedTopBar(onHeightMeasured = { height ->
+                //更新内边距
                 topBarHeight = height
             })
         }
+
+
     }
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -156,12 +239,12 @@ class NotificationManager: AppCompatActivity() {
                 .onGloballyPositioned { coordinates ->
                     onHeightMeasured(coordinates.size.height)
                 },
-            color = Color.Transparent,
+            color = androidx.compose.ui.graphics.Color.Transparent,
         ) {
+            //顶部栏内容
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -169,51 +252,59 @@ class NotificationManager: AppCompatActivity() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    //左侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        //关闭按钮
                         CircleButton(
-                            onClick = { finish() },
+                            onClick = { dismiss() },
                             backgroundColor = ColorPack.background.copy(alpha = 0.99f),
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
-                                color = Color.Gray.copy(alpha = 0.1f)
+                                color = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.1f)
                             ),
-                            modifier = Modifier.padding(start = 15.dp)
+                            modifier = Modifier.padding(start = 10.dp)
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "退出",
+                                Icons.Filled.Close,
+                                contentDescription = "关闭",
                                 modifier = Modifier.background(Color.Transparent),
                                 tint = ColorPack.secondary
                             )
                         }
-
+                        //标题文本
                         Text(
-                            text = "通知管理",
+                            text = "设置与更多选项",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = ColorPack.primary,
                             modifier = Modifier.padding(start = 0.dp)
                         )
                     }
+                    //右侧
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
 
+                    }
                 }
             }
         }
     }
     @Composable
-    fun CircleButton( onClick: () -> Unit,
-                      modifier: Modifier = Modifier,
-                      size: Dp = 30.dp,
-                      backgroundColor: Color = MaterialTheme.colorScheme.primary,
-                      gradient: Brush? = null,
-                      border: BorderStroke? = null,
-                      elevation: Dp = 3.dp,
-                      enabled: Boolean = true,
-                      content: @Composable () -> Unit ) {
+    fun CircleButton(onClick: () -> Unit,
+                     modifier: Modifier = Modifier,
+                     size: Dp = 30.dp,
+                     backgroundColor: Color = ColorPack.primary,
+                     gradient: Brush? = null,
+                     border: BorderStroke? = null,
+                     elevation: Dp = 3.dp,
+                     enabled: Boolean = true,
+                     content: @Composable () -> Unit ) {
         val backgroundModifier = when {
             gradient != null -> Modifier.background(gradient)
             else -> Modifier.background(backgroundColor)
@@ -225,8 +316,8 @@ class NotificationManager: AppCompatActivity() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
-                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                    spotColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
+                    ambientColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f)
                 )
                 .then(if (border != null) Modifier.border(border, CircleShape) else Modifier)
                 .clip(CircleShape)
@@ -236,7 +327,7 @@ class NotificationManager: AppCompatActivity() {
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(
                         bounded = true,
-                        color = Color.Gray
+                        color = androidx.compose.ui.graphics.Color.Gray
                     )
                 ) { onClick() },
             contentAlignment = Alignment.Center,
@@ -259,116 +350,6 @@ class NotificationManager: AppCompatActivity() {
                     )
                 )
         )
-    }
-    @Composable
-    fun GlobalBackPic(){
-        //放置一个全屏底部区域，未来支持设置自定义壁纸
-
-        val darkTheme: Boolean = isSystemInDarkTheme()
-        val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(colorScheme.surface)
-        )
-
-
-    }
-    @SuppressLint("UnrememberedMutableState")
-    @Composable
-    fun NoticeListColumn(toolsList: List<ToolPackage>, animatedTopPadding: Dp) {
-        //指定边距
-        val contentPadding by derivedStateOf {
-            PaddingValues(
-                top = animatedTopPadding,
-                bottom = 400.dp,
-                start = 0.dp,
-                end = 0.dp
-            )
-        }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = contentPadding,
-            verticalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            items(toolsList) { tool ->
-                NoticeCard(
-                    name = tool.name,
-                    description = tool.description,
-                    onClick = { onClickListItem(tool.intent) }
-                )
-            }
-        }
-    }
-    @Composable
-    fun NoticeCard(name: String, description: String, onClick: () -> Unit) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 3.dp)
-                //.shadow(elevation = 5.dp, shape = RoundedCornerShape(12.dp), clip = false, spotColor = Color.Black.copy(alpha = 0.2f), ambientColor = Color.Black.copy(alpha = 1f))
-                .uniformShadow()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.Transparent),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(15.dp),
-            border = BorderStroke(
-                width = 0.5.dp,
-                color = Color.Gray.copy(alpha = 0.1f)
-            ),
-            colors = CardDefaults.cardColors(
-                containerColor = ColorPack.background,
-            ),
-            onClick = onClick
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(13.dp)
-            ) {
-                //大标题
-                Text(
-                    text = name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorPack.primary
-                )
-                //大小标题间距
-                Spacer(modifier = Modifier.height(4.dp))
-                //小标题或描述
-                Text(
-                    text = description,
-                    fontSize = 12.sp,
-                    color = ColorPack.secondary
-                )
-            }
-        }
-    }
-    //自定义阴影
-    @Suppress("DEPRECATION")
-    fun Modifier.uniformShadow(
-        blurRadius: Float = 15f,
-        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
-    ) = this.drawBehind {
-        drawIntoCanvas { canvas ->
-            val paint = Paint().apply {
-                color = shadowColor
-                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
-                    blurRadius,
-                    android.graphics.BlurMaskFilter.Blur.NORMAL
-                )
-            }
-
-            canvas.drawRoundRect(
-                left = 0f,
-                top = 0f,
-                right = size.width,
-                bottom = size.height,
-                radiusX = 12.dp.toPx(),
-                radiusY = 12.dp.toPx(),
-                paint = paint
-            )
-        }
     }
     //composable颜色配置
     private var isDarkMode: Boolean = false
@@ -393,38 +374,25 @@ class NotificationManager: AppCompatActivity() {
         background = Color(0xFF121212),
     )
 
-    //处理卡片点击事件
-    private fun onClickListItem(toolIntent: String) {
-        consoleLog("接收到卡片点击事件丨事件意图字段：$toolIntent")
-
-        //执行
-        when(toolIntent){
-
-        }
-
-    }
 
 
-    //深浅色模式检测+设置状态栏字体颜色
-    fun colorModeDetector(context: Context): Boolean {
-        return when (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
-            Configuration.UI_MODE_NIGHT_NO -> true
-            Configuration.UI_MODE_NIGHT_YES -> false
-            else -> true
-        }
-    }
-    fun setStatusBarFontColor() {
-        val insetsController = WindowInsetsControllerCompat(
-            window, window.decorView
-        )
-        insetsController.isAppearanceLightStatusBars = colorModeDetector(this)
-    }
-    //统一日志控制
-    private fun consoleLog(msg: String, mark: Boolean = true) {
-        if (mark) {
-            Log.d("SuMing", msg)
+    //自定义退出逻辑
+    /*
+    private var lockPage = false
+    private fun customDismiss(){
+        if (!lockPage) {
+            Dismiss(false)
         }
     }
 
+    private fun Dismiss(flag_need_vibrate: Boolean = true){
+        if (flag_need_vibrate){ ToolVibrate().vibrate(requireContext()) }
+        val result = bundleOf("KEY" to "Dismiss")
+        setFragmentResult("FROM_FRAGMENT_MORE_BUTTON", result)
+        dismiss()
+
+    }
+
+     */
 
 }

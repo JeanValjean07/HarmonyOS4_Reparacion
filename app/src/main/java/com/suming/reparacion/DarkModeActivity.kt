@@ -2,9 +2,7 @@ package com.suming.reparacion
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.app.WallpaperManager
 import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
@@ -14,30 +12,23 @@ import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.MediaStore
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import androidx.cardview.widget.CardView
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,6 +39,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,6 +53,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -70,18 +65,19 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
@@ -97,11 +93,15 @@ import androidx.core.graphics.scale
 import androidx.core.view.WindowCompat
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
-import com.suming.reparacion.HelperTools.showCustomToast
+import com.suming.reparacion.ActivityComponents.DarkModeFragment
+import com.suming.reparacion.AddonTools.showCustomToast
+import com.suming.reparacion.DataPack.Descriptions
+import com.suming.reparacion.FunctionalPack.BitmapLoader
+import com.suming.reparacion.FunctionalPack.WallpaperFileWrapper
+import com.suming.reparacion.FunctionalPack.WallpaperSetor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -116,8 +116,6 @@ class DarkModeActivity: AppCompatActivity() {
     private var lastClickMillis: Long = 0
 
 
-    //连接到ViewModel
-    val HelperViewModel = HelperViewModel()
     //NestedScrollArea
     private lateinit var NestedScrollArea: NestedScrollView
 
@@ -128,7 +126,7 @@ class DarkModeActivity: AppCompatActivity() {
         //界面配置
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_dark_mode)
+        setContentView(R.layout.main_dark_mode_activity)
         //准备工作
         init()
 
@@ -141,39 +139,7 @@ class DarkModeActivity: AppCompatActivity() {
         //ExplanationCompose
         val ExplanationCompose = findViewById<ComposeView>(R.id.ExplanationCompose)
         ExplanationCompose.setContent {
-            val Y =300
-            val T = 300
-            var isVisible by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) {
-                isVisible = true
-            }
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = slideInVertically(
-                    initialOffsetY = { Y },
-                    animationSpec = tween(durationMillis = T)
-                )
-            ){
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                        .background(colorResource(id = R.color.HeadBackground))
-                        .border(
-                            1.dp,
-                            colorResource(id = R.color.HeadText),
-                            RoundedCornerShape(16.dp)
-                        )
-                        .padding(10.dp)
-
-                ) {
-                    Text(
-                        text = getString(R.string.description_darkmode),
-                        style = TextStyle(fontSize = 14.sp),
-                        color = colorResource(id = R.color.HeadText),
-                    )
-                }
-            }
+            ExplanationRoot()
         }
 
 
@@ -202,6 +168,9 @@ class DarkModeActivity: AppCompatActivity() {
     //Composable Functions
     @Composable
     fun ComposeRoot() {
+        //在root中取颜色模式
+        isDarkMode = isSystemInDarkTheme()
+        ColorPack = if (isDarkMode) DarkColorScheme else LightColorScheme
         //使用Box作为根布局
         Box(modifier = Modifier
             .wrapContentHeight()
@@ -235,8 +204,6 @@ class DarkModeActivity: AppCompatActivity() {
                 topBarHeight = height
             })
         }
-
-
     }
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -252,9 +219,6 @@ class DarkModeActivity: AppCompatActivity() {
                 },
             color = Color.Transparent,
         ) {
-            val darkTheme: Boolean = isSystemInDarkTheme()
-            val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-            //顶部栏内容
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -273,7 +237,7 @@ class DarkModeActivity: AppCompatActivity() {
                         //返回按钮
                         CircleButton(
                             onClick = { finish() },
-                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -285,7 +249,7 @@ class DarkModeActivity: AppCompatActivity() {
                                 Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "退出",
                                 modifier = Modifier.background(Color.Transparent),
-                                tint = colorScheme.secondary
+                                tint = ColorPack.secondary
                             )
                         }
                         //标题文本
@@ -293,8 +257,8 @@ class DarkModeActivity: AppCompatActivity() {
                             text = "深色模式壁纸",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colorScheme.primary,
-                            modifier = Modifier.padding(start = 5.dp)
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
                         )
                     }
                     //右侧
@@ -305,7 +269,7 @@ class DarkModeActivity: AppCompatActivity() {
                         //设置按钮
                         CircleButton(
                             onClick = { startSettingFragment() },
-                            backgroundColor = colorScheme.background.copy(alpha = 0.99f),
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
@@ -317,7 +281,7 @@ class DarkModeActivity: AppCompatActivity() {
                                 Icons.Filled.Settings,
                                 contentDescription = "设置",
                                 modifier = Modifier.background(Color.Transparent),
-                                tint = colorScheme.secondary
+                                tint = ColorPack.secondary
                             )
                         }
                     }
@@ -366,10 +330,7 @@ class DarkModeActivity: AppCompatActivity() {
         }
     }
     @Composable
-    fun BrushArea(modifier: Modifier = Modifier, height: Dp = 110.dp) {
-        val darkTheme: Boolean = isSystemInDarkTheme()
-        val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-        //
+    fun BrushArea(modifier: Modifier = Modifier, height: Dp = 90.dp) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -377,18 +338,16 @@ class DarkModeActivity: AppCompatActivity() {
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            colorScheme.surface.copy(alpha = 0.90f),
-                            colorScheme.surface.copy(alpha = 0.80f),
-                            colorScheme.surface.copy(alpha = 0.60f),
-                            colorScheme.surface.copy(alpha = 0.30f),
-                            colorScheme.surface.copy(alpha = 0f)
+                            ColorPack.surface.copy(alpha = 0.90f),
+                            ColorPack.surface.copy(alpha = 0.0f)
                         ),
-                        startY = 30f,
                     )
                 )
         )
     }
     //composable颜色配置
+    private var isDarkMode: Boolean = false
+    private lateinit var ColorPack: ColorScheme
     private val LightColorScheme = lightColorScheme(
         //全局底色
         surface = Color(0xFFFFFFFF),
@@ -408,6 +367,107 @@ class DarkModeActivity: AppCompatActivity() {
         //卡片底色
         background = Color(0xFF121212),
     )
+    //自定义阴影
+    @Suppress("DEPRECATION")
+    fun Modifier.uniformShadow(
+        blurRadius: Float = 15f,
+        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
+    ) = this.drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().apply {
+                color = shadowColor
+                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                    blurRadius,
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+            }
+
+            canvas.drawRoundRect(
+                left = 0f,
+                top = 0f,
+                right = size.width,
+                bottom = size.height,
+                radiusX = 12.dp.toPx(),
+                radiusY = 12.dp.toPx(),
+                paint = paint
+            )
+        }
+    }
+    @Composable
+    fun ContentCard(name: String, description: String, onClick: () -> Unit) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .uniformShadow()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(15.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = ColorPack.background,
+            ),
+            onClick = onClick
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(13.dp)
+            ) {
+                //大标题
+                Text(
+                    text = name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = ColorPack.primary
+                )
+                //大小标题间距
+                Spacer(modifier = Modifier.height(4.dp))
+                //小标题或描述
+                Text(
+                    text = description,
+                    fontSize = 12.sp,
+                    color = ColorPack.secondary
+                )
+            }
+        }
+    }
+    @Composable
+    fun ExplanationRoot(){
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 15.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = ColorPack.background,
+            ),
+            onClick = {}
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .padding(10.dp)
+
+            ) {
+                Text(
+                    text = Descriptions.textString_description_darkmodepaper,
+                    style = TextStyle(fontSize = 14.sp),
+                    color = colorResource(id = R.color.HeadText),
+                )
+            }
+        }
+    }
 
     //Functions
     //注册开关行为
@@ -415,6 +475,7 @@ class DarkModeActivity: AppCompatActivity() {
     private lateinit var switch_enable_slightMove: SwitchCompat
     private fun registerSwitchAction(){
         lifecycleScope.launch {
+            /*
             //开关：将选择的壁纸保存到外部
             switch_save_clip_out = findViewById(R.id.switchToGallery)
             switch_save_clip_out.setOnCheckedChangeListener { _, isChecked ->
@@ -427,6 +488,8 @@ class DarkModeActivity: AppCompatActivity() {
                 SettingsRequestCenter.set_PREFS_SlightMove_Clip(isChecked)
             }
             switch_enable_slightMove.isChecked = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this@DarkModeActivity)
+
+             */
         }
     }
     //注册非必要按钮
@@ -621,7 +684,8 @@ class DarkModeActivity: AppCompatActivity() {
             val bitmapForScale = bitmap.copy(Bitmap.Config.ARGB_8888, true)
             val croppedBitmap = info(bitmapForScale)
             //取文件实例
-            val file = wrapFile(this,mode = mode)
+            val wallpaperFileWrapper = WallpaperFileWrapper()
+            val file = wallpaperFileWrapper.wrapFile(this,mode = mode)
             //保存图片到App内部储存
             consoleLog("saveImage: 开始保存图片到App内部储存 path:${file.path} name:${file.name} absolutePath:${file.absolutePath} ")
             FileOutputStream(file).use { outputStream ->
@@ -663,54 +727,44 @@ class DarkModeActivity: AppCompatActivity() {
     //加载本地图片
     @SuppressLint("CutPasteId")
     private fun loadImage(mode: String, push: Boolean = false): Pair<Boolean, Bitmap?> {
+        val bitmapLoader = BitmapLoader()
         when(mode){
             //深色壁纸
             "dark" -> {
                 consoleLog("loadImage: 开始加载深色壁纸")
                 //直接取文件实例
-                val file = wrapFile(this,mode = mode)
-                if (file.exists()) {
-                    var bitmap: Bitmap?
-                    try{
-                        bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        //推送到显示
-                        consoleLog("loadImage: 加载深色壁纸成功")
-
-                        if(push) pushToImageView(bitmap,mode)
-
-                        return Pair(true,bitmap)
-                    }catch (_: Exception){
-                        consoleLog("loadImage: 加载深色壁纸失败")
-                        return Pair(false,null)
-                    }
-                }else{
-                    consoleLog("loadImage: 深色壁纸文件不存在。复盘：Dir:${file.parentFile},FileName:${file.name}")
-
+                val wallpaperFileWrapper = WallpaperFileWrapper()
+                val file = wallpaperFileWrapper.wrapFile(this,mode = mode)
+                //找BitmapLoader请求
+                val bitmap = bitmapLoader.loadBitmap(mode,file).second
+                //
+                if(bitmap == null){
+                    consoleLog("loadImage: 加载深色壁纸失败")
                     return Pair(false,null)
+                }else{
+                    //推送到显示
+                    if(push) pushToImageView(bitmap,mode)
+
+                    return Pair(true,bitmap)
                 }
             }
             //浅色壁纸
             "light" -> {
                 consoleLog("loadImage: 开始加载浅色壁纸")
                 //直接取文件实例
-                val file = wrapFile(this,mode = mode)
-                if (file.exists()) {
-                    var bitmap: Bitmap?
-                    try{
-                        bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        //推送到显示
-                        consoleLog("loadImage: 加载浅色壁纸成功")
-
-                        if(push) pushToImageView(bitmap,mode)
-
-                        return Pair(true,bitmap)
-                    }catch (_: Exception){
-                        consoleLog("loadImage: 加载浅色壁纸失败")
-                        return Pair(false,null)
-                    }
-                }else{
-                    consoleLog("loadImage: 浅色壁纸文件不存在。复盘：Dir:${file.parentFile},FileName:${file.name}")
+                val wallpaperFileWrapper = WallpaperFileWrapper()
+                val file = wallpaperFileWrapper.wrapFile(this,mode = mode)
+                //找BitmapLoader请求
+                val bitmap = bitmapLoader.loadBitmap(mode,file).second
+                //
+                if(bitmap == null){
+                    consoleLog("loadImage: 加载浅色壁纸失败")
                     return Pair(false,null)
+                }else{
+                    //推送到显示
+                    if(push) pushToImageView(bitmap,mode)
+
+                    return Pair(true,bitmap)
                 }
             }
             //其他错误传参
@@ -749,11 +803,13 @@ class DarkModeActivity: AppCompatActivity() {
         SettingsRequestCenter.set_State_dark_paper_set(this@DarkModeActivity, false)
         SettingsRequestCenter.set_State_light_paper_set(this@DarkModeActivity, false)
         //删除图片实例
-        deletePaper()
+        val wallpaperFileWrapper = WallpaperFileWrapper()
+        val img_directory = wallpaperFileWrapper.getImageDir()
+        deletePaper(dir = img_directory)
     }
-    private fun deletePaper(target: String = "") {
+    private fun deletePaper(target: String = "",dir: String = "") {
         //Dir实例
-        val dir = File(img_directory)
+        val dir = File(dir)
         //未传入参数时全删了
         if(target.isEmpty()){
             //直接全删了然后重新建文件夹
@@ -767,7 +823,9 @@ class DarkModeActivity: AppCompatActivity() {
             }
         }else{
             //根据传入参数删除对应文件
-            val file = wrapFile(this,mode = target)
+            val wallpaperFileWrapper = WallpaperFileWrapper()
+            val wallpaperFile = wallpaperFileWrapper.wrapFile(this,mode = target)
+            val file = wallpaperFileWrapper.wrapFile(this,mode = target)
             if (file.exists()) {
                 file.delete()
             }
@@ -837,48 +895,16 @@ class DarkModeActivity: AppCompatActivity() {
     }
     //打开设置面板
     private fun startSettingFragment(){
-
+        //打开DarkModeFragment
+        val fragment = DarkModeFragment()
+        fragment.show(supportFragmentManager, "DarkModeFragment")
     }
     //设置系统壁纸核心方法
-    private var wallpaperManager: WallpaperManager? = null
     private fun applySystemWallpaper(bitmap: Bitmap){
-        wallpaperManager = WallpaperManager.getInstance(this@DarkModeActivity)
-        //执行设置(需要收集各系统执行情况,扩展方法自定义)
-        wallpaperManager?.setBitmap(
-            bitmap, null, false,
-            WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
-        )
+        val wallpaperSetor = WallpaperSetor()
+        wallpaperSetor.applySystemWallpaper(bitmap, this)
     }
-    //包装文件
-    private val name_dark_img = "dark_wallpaper_img.jpg"
-    private val name_light_img = "light_wallpaper_img.jpg"
-    private val name_error_img = "error_wallpaper_img.jpg"
-    private val img_directory = "darkmode/current_wallpaper"
-    private fun wrapFile(context: Context, dir: String = "", name: String = "", mode: String = ""): File {
-        //先保证路径存在
-        fun makeSureDirExist(){
-            val fileDir = File(context.filesDir, img_directory)
-            if (!fileDir.exists()) {
-                fileDir.mkdirs()
-            }
-        }
-        makeSureDirExist()
-        //根据传入参数返回对应文件
-        if(dir != "" && name != ""){
-            return File(context.filesDir.resolve(dir),name)
-        }else{
-            if(mode == "dark"){
-                val file = File(context.filesDir.resolve(img_directory),name_dark_img)
-                return file
-            }else if(mode == "light"){
-                val file = File(context.filesDir.resolve(img_directory),name_light_img)
-                return file
-            }else{
-                val file = File(context.filesDir.resolve(img_directory),name_error_img)
-                return file
-            }
-        }
-    }
+
 
     //功能执行函数
     //倒计时后退出到桌面
@@ -1041,6 +1067,7 @@ class DarkModeActivity: AppCompatActivity() {
 
         shortcutManager?.requestPinShortcut(shortcut, null)
     }
+
 
 
 

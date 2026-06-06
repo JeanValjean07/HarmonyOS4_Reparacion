@@ -135,7 +135,36 @@ object SettingsRequestCenter {
 
         return STATE_light_paper_set == 1
     }
+    //状态值：磁贴当前状态
+    private var STATE_tile_status_on_dark = -1
+    fun set_State_tile_status_on_dark(context: Context,isDark: Boolean) {
+        //确保已初始化表
+        if (!state_PREFS_DarkMode_initialized) {
+            PREFS_DarkMode = context.getSharedPreferences("PREFS_DarkMode", 0)
+            state_PREFS_DarkMode_initialized = true
+        }
+
+        STATE_tile_status_on_dark = if (isDark) 1 else 0
+
+        PREFS_DarkMode.edit { putInt("STATE_tile_status_on_dark", STATE_tile_status_on_dark) }
+    }
+    fun get_State_tile_status_on_dark(context: Context): Boolean {
+        //确保已初始化表
+        if (!state_PREFS_DarkMode_initialized) {
+            PREFS_DarkMode = context.getSharedPreferences("PREFS_DarkMode", 0)
+            state_PREFS_DarkMode_initialized = true
+        }
+        //确保配置项已被读取过
+        if (STATE_tile_status_on_dark == -1){
+            STATE_tile_status_on_dark = PREFS_DarkMode.getInt("STATE_tile_status_on_dark", -1)
+            if (STATE_tile_status_on_dark == -1){
+                PREFS_DarkMode.edit { putInt("STATE_tile_status_on_dark", 0) }
+            }
+        }
+        return STATE_tile_status_on_dark == 1
+    }
 
 
 
-}
+
+}//</object>

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="false"
     android:background="@color/Background"
-    tools:context=".NotificationManager"
+    tools:context=".AntiqueZip.NotificationManager"
     tools:ignore="HardcodedText">
 
     <!-- AppBar -->

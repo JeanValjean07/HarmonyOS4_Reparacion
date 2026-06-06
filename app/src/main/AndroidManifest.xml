@@ -13,7 +13,6 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,97 +21,76 @@
         android:label="补全计划"
         android:supportsRtl="true"
         android:extractNativeLibs="true"
-        android:theme="@style/MainTheme">
+        android:theme="@style/BASIC_ACTIVITY_NO_BAR">
 
-        <!-- 控制中心磁贴 -->
-        <meta-data
-            android:name="com.huawei.messaging.default_notification_icon"
-            android:value="@drawable/ic_launcher_foreground"/>
+
 
         <!-- 主页 -->
-        <activity
-            android:name="com.suming.reparacion.MainActivity"
-            android:theme="@style/BASIC_NO_BAR"
+        <activity android:name="com.suming.reparacion.MainActivity"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <!-- 深色模式壁纸 -->
-        <activity
-            android:name="com.suming.reparacion.DarkModeActivity"
-            android:theme="@style/BASIC_NO_BAR"
+        <activity android:name="com.suming.reparacion.DarkModeActivity"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
-
-        <!-- 切换模式纯净版 -->
-        <activity
-            android:name="com.suming.reparacion.DarkModePure"
+        <activity android:name="com.suming.reparacion.DarkModePure"
             android:excludeFromRecents="true"
-            android:theme="@style/DarkModePureTheme"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
-
+        <!-- 通知管理 -->
+        <activity android:name="com.suming.reparacion.NotificationManager"
+            android:exported="true"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
+            />
         <!-- 应用管理 -->
-        <activity
-            android:name="com.suming.reparacion.ApplicationManager"
+        <activity android:name="com.suming.reparacion.ApplicationManager"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
-
         <!-- 后台检查 -->
-        <activity
-            android:name="com.suming.reparacion.BackgroundCheckActivity"
+        <activity android:name="com.suming.reparacion.BackgroundCheckActivity"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
-
         <!-- 音量控制 -->
-        <activity
-            android:name="com.suming.reparacion.VolumeControl"
+        <activity android:name="com.suming.reparacion.VolumeControl"
             android:exported="true"
             />
 
 
-        <!-- 通知控制 -->
-        <activity
-            android:name="com.suming.reparacion.NotificationManager"
+        <!-- 指南 -->
+        <activity android:name="com.suming.reparacion.GuidanceActivity"
             android:exported="true"
             />
-
-        <!-- 指南和帮助 -->
-        <activity
-            android:name="com.suming.reparacion.GuidanceActivity"
-            android:exported="true"
-            />
-
         <!-- 设置 -->
-        <activity
-            android:name="com.suming.reparacion.SettingsActivity"
+        <activity android:name="com.suming.reparacion.SettingsActivity"
             android:exported="true"
             />
-
         <!-- 关于 -->
-        <activity
-            android:name="com.suming.reparacion.AboutActivity"
+        <activity android:name="com.suming.reparacion.AboutAppActivity"
             android:exported="true"
             />
 
-        <!-- 开放源代码许可 -->
-        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
-            android:theme="@style/THEME_OSS"
-            android:screenOrientation="portrait"
-            android:exported="true"
-            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
-        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
-            android:theme="@style/THEME_OSS"
-            android:screenOrientation="portrait"
-            android:exported="true"
-            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
 
-        <!-- 服务：控制中心磁贴:深色壁纸 -->
-        <service
-            android:name="com.suming.reparacion.DarkModeTileService"
+
+
+        <!-- 服务：全局均衡器 -->
+        <service android:name="com.suming.reparacion.VolumeControlService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            tools:ignore="ForegroundServicePermission" />
+
+
+
+        <!-- 系统服务：控制中心磁贴:深色壁纸 -->
+        <service android:name="com.suming.reparacion.TileServices.DarkModeTileService"
             android:exported="true"
             android:label="深色壁纸"
             android:icon="@drawable/ic_tile_dark_mode"
@@ -125,10 +103,8 @@
                 android:name="huawei.theme.accent_support"
                 android:value="true" />
         </service>
-
-        <!-- 服务：控制中心磁贴:音量面板 -->
-        <service
-            android:name="com.suming.reparacion.VolumeTileService"
+        <!-- 系统服务：控制中心磁贴:音量面板 -->
+        <service android:name="com.suming.reparacion.TileServices.VolumeTileService"
             android:exported="true"
             android:label="音量面板"
             android:icon="@drawable/ic_tile_volume"
@@ -141,21 +117,35 @@
                 android:name="huawei.theme.accent_support"
                 android:value="true" />
         </service>
-        <!-- 服务：全局均衡器 -->
-        <service
-            android:name="com.suming.reparacion.VolumeControlService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback"
-            tools:ignore="ForegroundServicePermission" />
-
-        <!-- 服务：通知监听 -->
+        <!-- 系统服务：通知监听器 -->
         <service android:name="com.suming.reparacion.NotiService"
             android:exported="true"
+            android:label="访问通知并提供管理服务"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <!-- 元数据：启用控制中心磁贴 -->
+        <meta-data android:name="com.huawei.messaging.default_notification_icon"
+            android:value="@drawable/ic_launcher_foreground"
+            />
+
+        <!-- 开放源代码许可(谷歌OSS) -->
+        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
+        <activity android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
+        <!-- TrashCan - 存档不再使用的旧代码 -->
+        <activity android:name="com.suming.reparacion.AntiqueZip.VeryOLDNotiManager"
+            android:exported="true"
+            android:theme="@style/BASIC_ACTIVITY_NO_BAR"
+            />
 
     </application>
 

@@ -1,4 +1,4 @@
-package com.suming.reparacion.HelperTools
+package com.suming.reparacion.AddonTools
 
 import android.app.Activity
 import android.content.Context
@@ -16,7 +16,7 @@ fun Context.showCustomToast(message: String, position: Int = 3) {
     activity.runOnUiThread {
 
         val inflater: LayoutInflater = activity.layoutInflater
-        val layout: View = inflater.inflate(R.layout.tool_custom_toast, activity.findViewById(R.id.custom_toast_root))
+        val layout: View = inflater.inflate(R.layout.addon_custom_toast, activity.findViewById(R.id.custom_toast_root))
         val textView: TextView = layout.findViewById(R.id.ToastText)
         textView.text = message
         val toast = Toast(activity)

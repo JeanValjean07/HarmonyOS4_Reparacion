@@ -1,9 +1,9 @@
-package com.suming.reparacion
+package com.suming.reparacion.FunctionalPack
 
 import android.content.Context
-import com.suming.reparacion.data.AppInfo
+import com.suming.reparacion.DataPack.AppInfo
 
-class ApplicationEngin(private val context: Context) {
+class ApplicationAccountant(private val context: Context) {
 
 
 
@@ -32,4 +32,3 @@ class ApplicationEngin(private val context: Context) {
 
 
 }
-
