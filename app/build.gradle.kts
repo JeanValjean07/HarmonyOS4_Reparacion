@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.main
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -80,6 +82,13 @@ android {
 
     buildFeatures {
         compose = true
+        aidl = true
+    }
+
+    sourceSets {
+        named("main") {
+            aidl.srcDirs("src/main/aidl")
+        }
     }
 
     composeOptions {

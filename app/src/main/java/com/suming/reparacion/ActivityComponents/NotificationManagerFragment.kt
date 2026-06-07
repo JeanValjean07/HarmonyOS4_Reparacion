@@ -1,9 +1,11 @@
 package com.suming.reparacion.ActivityComponents
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -22,7 +24,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,54 +34,73 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.DataPack.Descriptions
 import com.suming.reparacion.R
+import com.suming.reparacion.SettingsRequestCenter
 import kotlinx.coroutines.launch
 
-@SuppressLint("UseGetLayoutInflater", "InflateParams","SetTextI18n")
-class DarkModeFragment: DialogFragment() {
+class NotificationManagerFragment : DialogFragment() {
     companion object {
-        fun newInstance(): DarkModeFragment = DarkModeFragment().apply { arguments = bundleOf(  ) }
+        fun newInstance(): NotificationManagerFragment = NotificationManagerFragment().apply { arguments = bundleOf(  ) }
     }
 
     //共享ViewModel(暂未启用)
     //private val vm: DarkModeViewModel by activityViewModels()
     //composeRoot
     private lateinit var ComposeRoot: ComposeView
+
+    private var isPermissionGranted by mutableStateOf(false)
 
 
     @Suppress("DEPRECATION")
@@ -162,13 +185,19 @@ class DarkModeFragment: DialogFragment() {
         }
     }//</onViewCreated>
 
+    override fun onResume() {
+        super.onResume()
+        consoleLog("Fragment onResume")
+        checkPermission()
+    }
+
     //Lifecycle Functions
     private fun init(view: View){
         //初始化composeRoot
         ComposeRoot = view.findViewById(R.id.fragment_compose_root)
         //设置卡片高度
         if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
-            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.7).toInt()
+            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.8).toInt()
         }
     }
 
@@ -203,6 +232,7 @@ class DarkModeFragment: DialogFragment() {
             //最底层
 
             //content
+            ContentRoot(animatedTopPadding)
 
 
             //最顶层
@@ -212,8 +242,6 @@ class DarkModeFragment: DialogFragment() {
                 topBarHeight = height
             })
         }
-
-
     }
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -324,6 +352,58 @@ class DarkModeFragment: DialogFragment() {
         }
     }
     @Composable
+    fun CapsuleButton(onClick: () -> Unit,
+                      modifier: Modifier = Modifier,
+                      text: String,
+                      backgroundColor: Color = ColorPack.background,
+                      border: BorderStroke = BorderStroke(
+                          width = 0.5.dp,
+                          color = Color.Gray.copy(alpha = 0.1f)
+                      ),
+                      elevation: Dp = 2.dp,
+                      enabled: Boolean = true,
+                      horizontalPadding: Dp = 10.dp,
+                      verticalPadding: Dp = 5.dp,
+                      textColor: Color = ColorPack.secondary) {
+        val backgroundModifier = Modifier.background(backgroundColor)
+        Box(
+            modifier = modifier
+                .wrapContentWidth()
+                .height(35.dp)
+                .shadow(
+                    elevation = elevation,
+                    shape = CircleShape,
+                    clip = false,
+                    spotColor = Color.Black.copy(alpha = 0.4f),
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                )
+                .clip(CircleShape)
+                .then(backgroundModifier)
+                .then(Modifier.border(border, CircleShape))
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(
+                        bounded = true,
+                        color = Color.Gray
+                    )
+                ) { onClick() }
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    color = textColor,
+                )
+            }
+        }
+    }
+    @Composable
     fun BrushArea(modifier: Modifier = Modifier, height: Dp = 90.dp) {
         Box(
             modifier = modifier
@@ -338,6 +418,241 @@ class DarkModeFragment: DialogFragment() {
                     )
                 )
         )
+    }
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun PermissionStateCard() {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .uniformShadow()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(15.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(containerColor = ColorPack.background)
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "通知访问权限",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Text(
+                            text = "访问您的通知并提供管理服务",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = ColorPack.secondary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            checked = isPermissionGranted,
+                            onCheckedChange = { changePermissionState() },
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+
+                    }
+                }
+                //权限提示
+                Text(
+                    text = if (isPermissionGranted) {
+                        Descriptions.textString_description_notificationPermission_on
+                    } else {
+                        Descriptions.textString_description_notificationPermission_off
+                    },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = ColorPack.secondary,
+                    modifier = Modifier.padding(vertical = 5.dp)
+                )
+            }
+        }
+    }
+    @Composable
+    fun SwitchCard(){
+        //读取设置项
+        val isCollectEmptyContent = remember { mutableStateOf(false) }
+        fun updateLocalPrefRemember_isCollectEmptyContent (){
+            isCollectEmptyContent.value = SettingsRequestCenter.get_PREFS_Notification_Keep_Empty(requireContext())
+        }
+        LaunchedEffect(Unit) {
+            isCollectEmptyContent.value = SettingsRequestCenter.get_PREFS_Notification_Keep_Empty(requireContext())
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .uniformShadow()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(15.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(containerColor = ColorPack.background)
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "收集内容为空的通知",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Text(
+                            text = "收集没有标题和内容文本的通知",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = ColorPack.secondary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            checked = isCollectEmptyContent.value,
+                            onCheckedChange = {
+                                SettingsRequestCenter.set_PREFS_Notification_Keep_Empty(requireContext(), it)
+                                updateLocalPrefRemember_isCollectEmptyContent()
+                            },
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+
+                    }
+                }
+            }
+        }
+    }
+    @Composable
+    fun ButtonCard() {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding( vertical = 5.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top
+            ) {
+                CapsuleButton(
+                    text = "清除当前获取的通知",
+                    onClick = {  clearNotification(false) },
+                )
+                Spacer(modifier = Modifier.padding(top = 5.dp))
+                CapsuleButton(
+                    text = "清除当前获取的通知并重新读取现存通知",
+                    onClick = {  clearNotification(true) },
+                )
+            }
+        }
+    }
+    @Composable
+    fun ContentRoot(topBarHeight: Dp){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(top = topBarHeight),
+        ) {
+            PermissionStateCard()
+            SwitchCard()
+            ButtonCard()
+            Explanation()
+        }
+    }
+    @Composable
+    fun Explanation(){
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 15.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = ColorPack.background,
+            ),
+            onClick = {}
+        ){
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = Descriptions.textString_description_notificationManager,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = ColorPack.secondary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+    //自定义阴影
+    @Suppress("DEPRECATION")
+    fun Modifier.uniformShadow(
+        blurRadius: Float = 15f,
+        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
+    ) = this.drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().apply {
+                color = shadowColor
+                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                    blurRadius,
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+            }
+
+            canvas.drawRoundRect(
+                left = 0f,
+                top = 0f,
+                right = size.width,
+                bottom = size.height,
+                radiusX = 12.dp.toPx(),
+                radiusY = 12.dp.toPx(),
+                paint = paint
+            )
+        }
     }
     //composable颜色配置
     private var isDarkMode: Boolean = false
@@ -362,25 +677,41 @@ class DarkModeFragment: DialogFragment() {
         background = Color(0xFF121212),
     )
 
-
-
-    //自定义退出逻辑
-    /*
-    private var lockPage = false
-    private fun customDismiss(){
-        if (!lockPage) {
-            Dismiss(false)
+    //权限状态切换
+    private fun changePermissionState() {
+        //跳转到设置页面
+        val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+    //检查权限
+    private fun checkPermission(){
+        val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(requireContext())
+        val isNotificationListenerEnabled = enabledListenerPackages.contains(requireContext().packageName)
+        if(isNotificationListenerEnabled){
+            isPermissionGranted = true
+        }else{
+            isPermissionGranted = false
         }
     }
-
-    private fun Dismiss(flag_need_vibrate: Boolean = true){
-        if (flag_need_vibrate){ ToolVibrate().vibrate(requireContext()) }
-        val result = bundleOf("KEY" to "Dismiss")
-        setFragmentResult("FROM_FRAGMENT_MORE_BUTTON", result)
+    //清除通知
+    private fun clearNotification(reload: Boolean){
+        NotificationManagerRepo.clearAll()
+        if(reload){
+            gatherCurrentNotification()
+        }
         dismiss()
-
+    }
+    //重新读取通知
+    private fun gatherCurrentNotification(){
+        NotificationManagerRepo.setServiceConnect("SERVICE_INTENT_FETCH_ALL")
     }
 
-     */
+    //统一日志控制
+    private fun consoleLog(msg: String, mark: Boolean = true) {
+        if (mark) {
+            Log.d("SuMing", msg)
+        }
+    }
 
 }

@@ -1,9 +1,11 @@
 package com.suming.reparacion.ActivityComponents
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -21,8 +23,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,54 +35,79 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.DialogFragment.STYLE_NO_TITLE
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.DataPack.Descriptions
+import com.suming.reparacion.DataPack.NotificationPack
 import com.suming.reparacion.R
+import com.suming.reparacion.SettingsRequestCenter
 import kotlinx.coroutines.launch
 
-@SuppressLint("UseGetLayoutInflater", "InflateParams","SetTextI18n")
-class DarkModeFragment: DialogFragment() {
+class NotificationManagerTrashCan: DialogFragment() {
     companion object {
-        fun newInstance(): DarkModeFragment = DarkModeFragment().apply { arguments = bundleOf(  ) }
+        fun newInstance(): NotificationManagerTrashCan = NotificationManagerTrashCan().apply { arguments = bundleOf(  ) }
     }
 
-    //共享ViewModel(暂未启用)
-    //private val vm: DarkModeViewModel by activityViewModels()
+
     //composeRoot
     private lateinit var ComposeRoot: ComposeView
+
+    private var isPermissionGranted by mutableStateOf(false)
 
 
     @Suppress("DEPRECATION")
@@ -162,13 +192,19 @@ class DarkModeFragment: DialogFragment() {
         }
     }//</onViewCreated>
 
+    override fun onResume() {
+        super.onResume()
+        consoleLog("Fragment onResume")
+        checkPermission()
+    }
+
     //Lifecycle Functions
     private fun init(view: View){
         //初始化composeRoot
         ComposeRoot = view.findViewById(R.id.fragment_compose_root)
         //设置卡片高度
         if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
-            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.7).toInt()
+            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.8).toInt()
         }
     }
 
@@ -203,6 +239,7 @@ class DarkModeFragment: DialogFragment() {
             //最底层
 
             //content
+            ContentRoot(animatedTopPadding)
 
 
             //最顶层
@@ -212,8 +249,6 @@ class DarkModeFragment: DialogFragment() {
                 topBarHeight = height
             })
         }
-
-
     }
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -265,7 +300,7 @@ class DarkModeFragment: DialogFragment() {
                         }
                         //标题文本
                         Text(
-                            text = "设置与更多选项",
+                            text = "已隐藏的通知",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = ColorPack.primary,
@@ -339,6 +374,171 @@ class DarkModeFragment: DialogFragment() {
                 )
         )
     }
+    @Composable
+    fun ContentRoot(topBarHeight: Dp){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(top = topBarHeight),
+        ) {
+
+        }
+    }
+    @SuppressLint("UnrememberedMutableState")
+    @Composable
+    fun NoticeListColumn(noticeList: List<NotificationPack>, animatedTopPadding: Dp) {
+        //指定边距
+        val contentPadding by derivedStateOf {
+            PaddingValues(
+                top = animatedTopPadding,
+                bottom = 400.dp,
+                start = 0.dp,
+                end = 0.dp
+            )
+        }
+        //点击菜单
+        var selectedUUID by remember { mutableStateOf<String?>(null) }
+        var showMenu by remember { mutableStateOf(false) }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = contentPadding,
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            items(noticeList) { notice ->
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    NoticeCard(
+                        packageName = notice.packageName,
+                        title = notice.title,
+                        text = notice.text,
+                        onClick = { selectedUUID = notice.uniqueID; showMenu = true }
+                    )
+                    if (selectedUUID == notice.uniqueID) {
+                        DropdownMenu(
+                            expanded = true,
+                            onDismissRequest = { selectedUUID = null },
+                            offset = DpOffset(
+                                x = 100.dp,
+                                y = 0.dp
+                            ),
+                            modifier = Modifier.wrapContentSize().background(ColorPack.background)
+                        ) {
+                            Text(
+                                text = "ID $selectedUUID",
+                                fontSize = 10.sp,
+                                color = ColorPack.secondary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                            )
+                            Text(
+                                text = "包名 ${notice.packageName}",
+                                fontSize = 10.sp,
+                                color = ColorPack.secondary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "查看详情", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+
+                                    selectedUUID = null
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "进入系统通知设置", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+                                    //打开系统通知设置页面
+
+                                    //关闭菜单
+                                    selectedUUID = null
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "忽略该应用", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+
+                                    selectedUUID = null
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+    @Composable
+    fun NoticeCard(packageName: String, title: String, text: String, onClick: () -> Unit) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .uniformShadow()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(15.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(containerColor = ColorPack.background,),
+            onClick = onClick
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(13.dp)
+            ) {
+                //App名称
+                Text(
+                    text = packageName,
+                    fontSize = 9.sp,
+                    color = ColorPack.secondary
+                )
+                //大小标题间距
+                Spacer(modifier = Modifier.height(4.dp))
+                //大标题
+                Text(
+                    text = title,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = ColorPack.primary
+                )
+                //大小标题间距
+                Spacer(modifier = Modifier.height(4.dp))
+                //小标题或描述
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    color = ColorPack.secondary
+                )
+            }
+        }
+    }
+    //自定义阴影
+    @Suppress("DEPRECATION")
+    fun Modifier.uniformShadow(
+        blurRadius: Float = 15f,
+        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
+    ) = this.drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().apply {
+                color = shadowColor
+                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                    blurRadius,
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+            }
+
+            canvas.drawRoundRect(
+                left = 0f,
+                top = 0f,
+                right = size.width,
+                bottom = size.height,
+                radiusX = 12.dp.toPx(),
+                radiusY = 12.dp.toPx(),
+                paint = paint
+            )
+        }
+    }
     //composable颜色配置
     private var isDarkMode: Boolean = false
     private lateinit var ColorPack: ColorScheme
@@ -362,25 +562,42 @@ class DarkModeFragment: DialogFragment() {
         background = Color(0xFF121212),
     )
 
+    //权限状态切换
+    private fun changePermissionState() {
+        //跳转到设置页面
+        val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+    //检查权限
+    private fun checkPermission(){
+        val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(requireContext())
+        val isNotificationListenerEnabled = enabledListenerPackages.contains(requireContext().packageName)
+        if(isNotificationListenerEnabled){
+            isPermissionGranted = true
+        }else{
+            isPermissionGranted = false
+        }
+    }
+    //清除通知
+    private fun clearNotification(reload: Boolean){
+        NotificationManagerRepo.clearAll()
+        if(reload){
+            gatherCurrentNotification()
+        }
+        dismiss()
+    }
+    //重新读取通知
+    private fun gatherCurrentNotification(){
+        NotificationManagerRepo.setServiceConnect("SERVICE_INTENT_FETCH_ALL")
+    }
 
-
-    //自定义退出逻辑
-    /*
-    private var lockPage = false
-    private fun customDismiss(){
-        if (!lockPage) {
-            Dismiss(false)
+    //统一日志控制
+    private fun consoleLog(msg: String, mark: Boolean = true) {
+        if (mark) {
+            Log.d("SuMing", msg)
         }
     }
 
-    private fun Dismiss(flag_need_vibrate: Boolean = true){
-        if (flag_need_vibrate){ ToolVibrate().vibrate(requireContext()) }
-        val result = bundleOf("KEY" to "Dismiss")
-        setFragmentResult("FROM_FRAGMENT_MORE_BUTTON", result)
-        dismiss()
-
-    }
-
-     */
 
 }

@@ -166,5 +166,44 @@ object SettingsRequestCenter {
 
 
 
+    //设置清单-通知管理器---------------------------------------------------
+    private var PREFS_Notification: SharedPreferences? = null
+
+    //设置项：保留内容为空的通知
+    private var PREFS_Notification_Keep_Empty = -1
+    fun set_PREFS_Notification_Keep_Empty(context: Context,isKeep: Boolean){
+        if(PREFS_Notification == null){
+            PREFS_Notification = context.getSharedPreferences("PREFS_Notification", 0)
+        }
+
+        PREFS_Notification_Keep_Empty = if (isKeep) 1 else 0
+        PREFS_Notification?.edit { putInt("PREFS_Notification_Keep_Empty", PREFS_Notification_Keep_Empty) }
+    }
+    fun get_PREFS_Notification_Keep_Empty(context: Context): Boolean {
+        if(PREFS_Notification == null){
+            PREFS_Notification = context.getSharedPreferences("PREFS_Notification", 0)
+        }
+        PREFS_Notification_Keep_Empty = PREFS_Notification?.getInt("PREFS_Notification_Keep_Empty", -1) ?: -1
+        if (PREFS_Notification_Keep_Empty == -1){
+            PREFS_Notification?.edit { putInt("PREFS_Notification_Keep_Empty", 0) }
+        }
+
+        return PREFS_Notification_Keep_Empty == 1
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }//</object>

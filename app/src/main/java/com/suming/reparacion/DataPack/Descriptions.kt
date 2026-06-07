@@ -46,8 +46,24 @@ object Descriptions {
 
             "\n\n\n\n" + textString_description_author_sign
 
+    val textString_description_notificationManager = "说明 | Notification Manager \n\n" +
+            "1.开启通知访问权限后，系统会持续主动唤醒App以处理通知，可能造成些许耗电。若您在意这种情况，请在使用后关闭通知访问权限。" +
+            "\n\n" +
+            "2.隐藏通知的原理是将通知尽可能延后。由于安卓系统不提供真正删除一条固定通知的功能，这是一种可行的隐藏方法。" +
+            "程序内的延迟时长约为30天，若您持续开启通知访问权限，程序会自动追加延时。若您不持续开启通知访问权限，每隔30天来手动隐藏一次即可。" +
+            "为通知设置延时后，哪怕关掉通知访问权限，延时也会继续生效。" +
+            "\n\n"
 
 
+
+
+
+
+    val textString_description_notificationPermission_on = "已开启通知访问权限。" +
+            "权限开启后，系统会自动唤起App通知监听服务并主动让它在后台持续运行。" +
+            "若您不要求App在后台运行且持续获取通知，可在退出之前关闭通知访问权限。"
+
+    val textString_description_notificationPermission_off = "未开启通知访问权限。若要读取通知，请先开启权限。"
 
 
 }

@@ -115,8 +115,7 @@ class DarkModeActivity: AppCompatActivity() {
     private val CoolDownGap_createShortcut = 4000L
     private var lastClickMillis: Long = 0
 
-
-    //NestedScrollArea
+    //ContentArea
     private lateinit var NestedScrollArea: NestedScrollView
 
     //Lifecycle

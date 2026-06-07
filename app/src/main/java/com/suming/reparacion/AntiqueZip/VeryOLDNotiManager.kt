@@ -60,7 +60,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.suming.reparacion.ApplicationManager
-import com.suming.reparacion.NotiService
+import com.suming.reparacion.ActivityComponents.NotificationManagerReceiver
 import com.suming.reparacion.R
 import com.suming.reparacion.Receiver
 import kotlinx.coroutines.Job
@@ -103,16 +103,16 @@ class VeryOLDNotiManager: AppCompatActivity(), ReceiverCallback {
         receiver = object : Receiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 intent.let {
-                    if (it.action == NotiService.Companion.ACTION_NOTIFICATION_RECEIVED) {
-                        val packageName = it.getStringExtra(NotiService.Companion.EXTRA_PACKAGE_NAME) ?: ""
-                        val title = it.getStringExtra(NotiService.Companion.EXTRA_TITLE) ?: ""
-                        val content = it.getStringExtra(NotiService.Companion.EXTRA_CONTENT) ?: ""
+                    if (it.action == NotificationManagerReceiver.ACTION_NOTIFICATION_RECEIVED) {
+                        val packageName = it.getStringExtra(NotificationManagerReceiver.Companion.EXTRA_PACKAGE_NAME) ?: ""
+                        val title = it.getStringExtra(NotificationManagerReceiver.Companion.EXTRA_TITLE) ?: ""
+                        val content = it.getStringExtra(NotificationManagerReceiver.Companion.EXTRA_CONTENT) ?: ""
                         onNotificationReceived(packageName, title, content)
                     }
                 }
             }
         }
-        val filter = IntentFilter(NotiService.Companion.ACTION_NOTIFICATION_RECEIVED).apply {
+        val filter = IntentFilter(NotificationManagerReceiver.Companion.ACTION_NOTIFICATION_RECEIVED).apply {
             addCategory(Intent.CATEGORY_DEFAULT)
         }
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)

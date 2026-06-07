@@ -1,10 +1,13 @@
 package com.suming.reparacion
 
+import android.R.attr.x
+import android.R.attr.y
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +19,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -33,20 +37,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SnippetFolder
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,9 +61,11 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,24 +73,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.suming.reparacion.ActivityComponents.MainViewModel
-import com.suming.reparacion.AddonTools.showCustomToast
-import com.suming.reparacion.DataPack.ToolList
-import com.suming.reparacion.DataPack.ToolPackage
+import com.suming.reparacion.ActivityComponents.NotificationManagerFragment
+import com.suming.reparacion.ActivityComponents.NotificationManagerRepo
+import com.suming.reparacion.ActivityComponents.NotificationManagerViewModel
+import com.suming.reparacion.DataPack.NotificationPack
+
 
 class NotificationManager: AppCompatActivity() {
 
+
+    @SuppressLint("UnsafeIntentLaunch")
     @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,23 +111,29 @@ class NotificationManager: AppCompatActivity() {
         //手动设置状态栏字体颜色
         setStatusBarFontColor()
 
+        //检查权限
+        checkPermission()
 
-        //工具列表
-        val toolsList = ToolList.toolsList
+
+        val noticeCount = NotificationManagerRepo.getCount()
+        NotificationManagerRepo.setNotificationCount(noticeCount)
+        consoleLog("获取到通知数量为: $noticeCount")
 
         //托管给ComposableRoot
         setContent {
-            ComposeRoot(toolsList)
+            ComposeRoot()
         }
 
     }
 
 
     @Composable
-    fun ComposeRoot(toolsList: List<ToolPackage>) {
+    fun ComposeRoot() {
         //在root中取颜色模式
         isDarkMode = isSystemInDarkTheme()
         ColorPack = if (isDarkMode) DarkColorScheme else LightColorScheme
+        //自动感知通知列表变化
+        val noticeList by NotificationManagerRepo.list.collectAsState()
         //使用Box作为根布局
         Box(modifier = Modifier.fillMaxSize()) {
 
@@ -133,8 +157,11 @@ class NotificationManager: AppCompatActivity() {
             //最底层
             GlobalBackPic()
 
-            //
-            NoticeListColumn(toolsList, topPaddingDp )
+
+            //通知列表
+            NoticeListColumn(noticeList, topPaddingDp )
+            //错误提示区
+            ErrorCover()
 
 
             //最顶层
@@ -161,7 +188,6 @@ class NotificationManager: AppCompatActivity() {
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -199,7 +225,29 @@ class NotificationManager: AppCompatActivity() {
                             modifier = Modifier.padding(start = 0.dp)
                         )
                     }
-
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //设置按钮
+                        CircleButton(
+                            onClick = { startSettingFragment() },
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
+                            size = 40.dp,
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = Color.Gray.copy(alpha = 0.1f)
+                            ),
+                            modifier = Modifier.padding(end = 15.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = "设置",
+                                modifier = Modifier.background(Color.Transparent),
+                                tint = ColorPack.secondary
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -245,6 +293,58 @@ class NotificationManager: AppCompatActivity() {
         }
     }
     @Composable
+    fun CapsuleButton(onClick: () -> Unit,
+                      modifier: Modifier = Modifier,
+                      text: String,
+                      backgroundColor: Color = ColorPack.background,
+                      border: BorderStroke = BorderStroke(
+                          width = 0.5.dp,
+                          color = Color.Gray.copy(alpha = 0.1f)
+                      ),
+                      elevation: Dp = 2.dp,
+                      enabled: Boolean = true,
+                      horizontalPadding: Dp = 10.dp,
+                      verticalPadding: Dp = 5.dp,
+                      textColor: Color = ColorPack.secondary) {
+        val backgroundModifier = Modifier.background(backgroundColor)
+        Box(
+            modifier = modifier
+                .wrapContentWidth()
+                .height(35.dp)
+                .shadow(
+                    elevation = elevation,
+                    shape = CircleShape,
+                    clip = false,
+                    spotColor = Color.Black.copy(alpha = 0.4f),
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                )
+                .clip(CircleShape)
+                .then(backgroundModifier)
+                .then(Modifier.border(border, CircleShape))
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(
+                        bounded = true,
+                        color = Color.Gray
+                    )
+                ) { onClick() }
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    color = textColor,
+                )
+            }
+        }
+    }
+    @Composable
     fun BrushArea(modifier: Modifier = Modifier, height: Dp = 90.dp) {
         Box(
             modifier = modifier
@@ -278,7 +378,7 @@ class NotificationManager: AppCompatActivity() {
     }
     @SuppressLint("UnrememberedMutableState")
     @Composable
-    fun NoticeListColumn(toolsList: List<ToolPackage>, animatedTopPadding: Dp) {
+    fun NoticeListColumn(noticeList: List<NotificationPack>, animatedTopPadding: Dp) {
         //指定边距
         val contentPadding by derivedStateOf {
             PaddingValues(
@@ -288,27 +388,92 @@ class NotificationManager: AppCompatActivity() {
                 end = 0.dp
             )
         }
+        //点击菜单
+        var selectedUUID by remember { mutableStateOf<String?>(null) }
+        var showMenu by remember { mutableStateOf(false) }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            items(toolsList) { tool ->
-                NoticeCard(
-                    name = tool.name,
-                    description = tool.description,
-                    onClick = { onClickListItem(tool.intent) }
-                )
+            items(noticeList) { notice ->
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    NoticeCard(
+                        packageName = notice.packageName,
+                        title = notice.title,
+                        text = notice.text,
+                        onClick = { selectedUUID = notice.uniqueID; showMenu = true }
+                    )
+                    if (selectedUUID == notice.uniqueID) {
+                        DropdownMenu(
+                            expanded = true,
+                            onDismissRequest = { selectedUUID = null },
+                            offset = DpOffset(
+                                x = 100.dp,
+                                y = 0.dp
+                            ),
+                            modifier = Modifier.wrapContentSize().background(ColorPack.background)
+                        ) {
+                            Text(
+                                text = "ID $selectedUUID",
+                                fontSize = 10.sp,
+                                color = ColorPack.secondary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                            )
+                            Text(
+                                text = "包名 ${notice.packageName}",
+                                fontSize = 10.sp,
+                                color = ColorPack.secondary,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "查看详情", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+
+                                    selectedUUID = null
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "进入系统通知设置", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+                                    //打开系统通知设置页面
+                                    openNotificationSetting(notice.packageName)
+                                    //关闭菜单
+                                    selectedUUID = null
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "隐藏", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+                                    //隐藏通知
+                                    snoozeNotificationByKey(notice.key)
+                                    //关闭菜单
+                                    selectedUUID = null
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "延后(测试10s)", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+                                    //延后通知
+                                    delayNotificationByKey(notice.key,10)
+                                    //关闭菜单
+                                    selectedUUID = null
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
     @Composable
-    fun NoticeCard(name: String, description: String, onClick: () -> Unit) {
+    fun NoticeCard(packageName: String, title: String, text: String, onClick: () -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 3.dp)
-                //.shadow(elevation = 5.dp, shape = RoundedCornerShape(12.dp), clip = false, spotColor = Color.Black.copy(alpha = 0.2f), ambientColor = Color.Black.copy(alpha = 1f))
                 .uniformShadow()
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color.Transparent),
@@ -318,18 +483,24 @@ class NotificationManager: AppCompatActivity() {
                 width = 0.5.dp,
                 color = Color.Gray.copy(alpha = 0.1f)
             ),
-            colors = CardDefaults.cardColors(
-                containerColor = ColorPack.background,
-            ),
+            colors = CardDefaults.cardColors(containerColor = ColorPack.background,),
             onClick = onClick
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(13.dp)
             ) {
+                //App名称
+                Text(
+                    text = packageName,
+                    fontSize = 9.sp,
+                    color = ColorPack.secondary
+                )
+                //大小标题间距
+                Spacer(modifier = Modifier.height(4.dp))
                 //大标题
                 Text(
-                    text = name,
-                    fontSize = 18.sp,
+                    text = title,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     color = ColorPack.primary
                 )
@@ -337,11 +508,142 @@ class NotificationManager: AppCompatActivity() {
                 Spacer(modifier = Modifier.height(4.dp))
                 //小标题或描述
                 Text(
-                    text = description,
+                    text = text,
                     fontSize = 12.sp,
                     color = ColorPack.secondary
                 )
             }
+        }
+    }
+    @Composable
+    fun ErrorCover(){
+        //全屏信息提示区，在权限未开启或发生错误时使用
+        //先读取错误提示状态
+        val showErrorCoverMark by NotificationManagerRepo.showErrorCoverMark.collectAsState()
+        Box(
+            modifier = Modifier
+                .then(
+                    if (showErrorCoverMark == "NOTIFICATION_ALL_RIGHT") {
+                        Modifier.size(0.dp)
+                    } else {
+                        Modifier.fillMaxWidth().fillMaxHeight()
+                    }
+                )
+                .background(ColorPack.surface)
+        ){
+
+            when(showErrorCoverMark){
+                //权限未开启
+                "NOTIFICATION_ERROR_PERMISSION" -> {
+                    ErrorCoverPermission()
+                }
+                //服务离线
+                "NOTIFICATION_ERROR_SERVICE_OFFLINE" -> {
+                    ErrorCoverServiceOffline()
+                }
+                //没有通知
+                "NOTIFICATION_ERROR_ZERO_NOTICE_HERE" -> {
+                    ErrorCoverZeroNotice()
+                }
+            }
+
+        }
+    }
+    @Composable
+    fun ErrorCoverPermission(){
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            //错误提示
+            Text(
+                text = "请开启通知访问权限",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorPack.secondary
+            )
+            //按钮间距
+            Spacer(modifier = Modifier.height(5.dp))
+            //开启权限按钮
+            CapsuleButton(
+                text = "去开启权限",
+                onClick = { goEnablePermission() }
+            )
+            //按钮间距
+            Spacer(modifier = Modifier.height(5.dp))
+            //刷新权限状态按钮
+            CapsuleButton(
+                text = "刷新权限状态",
+                onClick = { checkPermission() }
+            )
+        }
+    }
+    @Composable
+    fun ErrorCoverZeroNotice(){
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            //错误提示
+            Text(
+                text = "目前没有任何通知",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorPack.secondary
+            )
+            //按钮间距
+            Spacer(modifier = Modifier.height(5.dp))
+            //待会儿再来按钮(退出当前页面)
+            CapsuleButton(
+                text = "待会儿再来看看",
+                onClick = { finish() }
+            )
+            //按钮间距
+            Spacer(modifier = Modifier.height(5.dp))
+            //再收集一次
+            CapsuleButton(
+                text = "再收集一次",
+                onClick = { getCurrentNotifications() }
+            )
+            //按钮间距
+            Spacer(modifier = Modifier.height(5.dp))
+            //发一条试试按钮
+            CapsuleButton(
+                text = "发一条试试",
+                onClick =  { sendTestNotification() }
+            )
+        }
+    }
+    @Composable
+    fun ErrorCoverServiceOffline(){
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            //错误提示
+            Text(
+                text = "服务离线，请稍等",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorPack.secondary
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "服务通常会在App启动后10秒内由系统启动。若超时，您可能需要重启App",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorPack.secondary
+            )
+            //按钮间距
+            Spacer(modifier = Modifier.height(5.dp))
+            //再等等按钮
+            CapsuleButton(
+                text = "再等等",
+                onClick = {  }
+            )
         }
     }
     //自定义阴影
@@ -402,6 +704,63 @@ class NotificationManager: AppCompatActivity() {
 
         }
 
+    }
+
+    //划掉通知
+    private fun cancelNotification(key: String){
+        NotificationManagerRepo.setNeedCancelKey(key)
+    }
+    //隐藏通知(极端延后)
+    private fun snoozeNotificationByKey(key: String){
+        NotificationManagerRepo.setNeedSnoozeKey(key)
+    }
+    //延后通知
+    private fun delayNotificationByKey(key: String,seconds: Int){
+        NotificationManagerRepo.setNeedDelayKey(key,seconds)
+    }
+
+
+    //检查权限
+    private fun checkPermission(){
+        val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(this)
+        val isNotificationListenerEnabled = enabledListenerPackages.contains(packageName)
+        if(isNotificationListenerEnabled){
+            NotificationManagerRepo.setIsPermissionGranted(true)
+        }else{
+            NotificationManagerRepo.setIsPermissionGranted(false)
+        }
+    }
+    //去开启权限
+    private fun goEnablePermission(){
+        val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+    //发一条测试通知
+    @SuppressLint("MissingPermission")
+    private fun sendTestNotification(){
+        val notificationManager = NotificationManagerCompat.from(this)
+        val notification = NotificationCompat.Builder(this, "test_channel")
+            .setContentTitle("测试通知")
+            .setContentText("这是一条测试通知")
+            .setSmallIcon(R.drawable.ic_notification)
+            .build()
+        notificationManager.notify(0, notification)
+    }
+    //打开设置面板
+    private fun startSettingFragment(){
+        val fragment = NotificationManagerFragment.newInstance()
+        fragment.show(supportFragmentManager, "NotificationManagerFragment")
+    }
+    //获取当前通知
+    private fun getCurrentNotifications(){
+        consoleLog("向服务拉取当前通知")
+        NotificationManagerRepo.setServiceConnect("SERVICE_INTENT_FETCH_ALL")
+    }
+    //打开系统通知设置页面
+    private fun openNotificationSetting(packageName: String){
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        startActivity(intent)
     }
 
 
