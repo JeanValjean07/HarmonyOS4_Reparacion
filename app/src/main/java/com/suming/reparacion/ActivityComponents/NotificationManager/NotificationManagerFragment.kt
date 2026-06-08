@@ -1,8 +1,9 @@
-package com.suming.reparacion.ActivityComponents
+package com.suming.reparacion.ActivityComponents.NotificationManager
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.BlurMaskFilter
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -42,6 +43,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
@@ -73,8 +75,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -92,15 +92,10 @@ import kotlinx.coroutines.launch
 
 class NotificationManagerFragment : DialogFragment() {
     companion object {
-        fun newInstance(): NotificationManagerFragment = NotificationManagerFragment().apply { arguments = bundleOf(  ) }
+        fun newInstance(): NotificationManagerFragment = NotificationManagerFragment().apply { arguments =
+            bundleOf()
+        }
     }
-
-    //共享ViewModel(暂未启用)
-    //private val vm: DarkModeViewModel by activityViewModels()
-    //composeRoot
-    private lateinit var ComposeRoot: ComposeView
-
-    private var isPermissionGranted by mutableStateOf(false)
 
 
     @Suppress("DEPRECATION")
@@ -109,8 +104,7 @@ class NotificationManagerFragment : DialogFragment() {
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
             //横屏时隐藏状态栏
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                ViewCompat.setOnApplyWindowInsetsListener(dialog?.window?.decorView ?: return) { view, insets -> WindowInsetsCompat.CONSUMED }
-
+                ViewCompat.setOnApplyWindowInsetsListener(dialog?.window?.decorView ?: return) { _, _ -> WindowInsetsCompat.CONSUMED }
                 /*
                 dialog?.window?.decorView?.post { dialog?.window?.insetsController?.let { controller ->
                     controller.hide(WindowInsets.Type.statusBars())
@@ -118,7 +112,6 @@ class NotificationManagerFragment : DialogFragment() {
                 } }
 
                  */
-
                 //三星专用:显示到挖空区域
                 dialog?.window?.attributes?.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             } else {
@@ -183,7 +176,7 @@ class NotificationManagerFragment : DialogFragment() {
                 return@setOnKeyListener false
             }
         }
-    }//</onViewCreated>
+    }
 
     override fun onResume() {
         super.onResume()
@@ -191,7 +184,6 @@ class NotificationManagerFragment : DialogFragment() {
         checkPermission()
     }
 
-    //Lifecycle Functions
     private fun init(view: View){
         //初始化composeRoot
         ComposeRoot = view.findViewById(R.id.fragment_compose_root)
@@ -201,6 +193,8 @@ class NotificationManagerFragment : DialogFragment() {
         }
     }
 
+
+
     //Compose Functions
     @Composable
     fun ComposeRoot() {
@@ -208,12 +202,14 @@ class NotificationManagerFragment : DialogFragment() {
         isDarkMode = isSystemInDarkTheme()
         ColorPack = if (isDarkMode) DarkColorScheme else LightColorScheme
         //使用Box作为根布局
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(ColorPack.surface)) {
+        Box(
+            modifier = Modifier.Companion
+                .fillMaxSize()
+                .background(ColorPack.surface)
+        ) {
 
             //顶部栏高度值
-            val statusBarHeight = WindowInsets.statusBars.getTop(LocalDensity.current)
+            val statusBarHeight = WindowInsets.Companion.statusBars.getTop(LocalDensity.current)
             var topBarHeight by remember { mutableIntStateOf(300) }
             val topPaddingDp = with(LocalDensity.current) {
                 (statusBarHeight + topBarHeight).toDp()
@@ -243,35 +239,35 @@ class NotificationManagerFragment : DialogFragment() {
             })
         }
     }
+    private lateinit var ComposeRoot: ComposeView
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     fun AdvancedTopBar(onHeightMeasured: (height: Int) -> Unit) {
         Surface(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .height(60.dp)
                 .onGloballyPositioned { coordinates ->
                     onHeightMeasured(coordinates.size.height)
                 },
-            color = androidx.compose.ui.graphics.Color.Transparent,
+            color = Color.Transparent,
         ) {
-            //顶部栏内容
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
             ) {
                 Row(
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .fillMaxWidth()
                         .height(59.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Companion.CenterVertically
                 ) {
                     //左侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Companion.CenterVertically
                     ) {
                         //关闭按钮
                         CircleButton(
@@ -280,14 +276,14 @@ class NotificationManagerFragment : DialogFragment() {
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
-                                color = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.1f)
+                                color = Color.Gray.copy(alpha = 0.1f)
                             ),
-                            modifier = Modifier.padding(start = 10.dp)
+                            modifier = Modifier.Companion.padding(start = 10.dp)
                         ) {
                             Icon(
                                 Icons.Filled.Close,
                                 contentDescription = "关闭",
-                                modifier = Modifier.background(Color.Transparent),
+                                modifier = Modifier.Companion.background(Color.Companion.Transparent),
                                 tint = ColorPack.secondary
                             )
                         }
@@ -295,17 +291,34 @@ class NotificationManagerFragment : DialogFragment() {
                         Text(
                             text = "设置与更多选项",
                             fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Companion.Bold,
                             color = ColorPack.primary,
-                            modifier = Modifier.padding(start = 0.dp)
+                            modifier = Modifier.Companion.padding(start = 0.dp)
                         )
                     }
                     //右侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Companion.CenterVertically
                     ) {
-
+                        //已延后的通知
+                        CircleButton(
+                            onClick = { startDelayCanFragment() },
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
+                            size = 40.dp,
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = Color.Gray.copy(alpha = 0.1f)
+                            ),
+                            modifier = Modifier.padding(end = 10.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.LockClock,
+                                contentDescription = "查看已被延后的通知",
+                                modifier = Modifier.background(Color.Transparent),
+                                tint = ColorPack.secondary
+                            )
+                        }
                     }
                 }
             }
@@ -322,8 +335,8 @@ class NotificationManagerFragment : DialogFragment() {
                      enabled: Boolean = true,
                      content: @Composable () -> Unit ) {
         val backgroundModifier = when {
-            gradient != null -> Modifier.background(gradient)
-            else -> Modifier.background(backgroundColor)
+            gradient != null -> Modifier.Companion.background(gradient)
+            else -> Modifier.Companion.background(backgroundColor)
         }
         Box(
             modifier = modifier
@@ -332,10 +345,15 @@ class NotificationManagerFragment : DialogFragment() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
-                    ambientColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f)
+                    spotColor = Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
                 )
-                .then(if (border != null) Modifier.border(border, CircleShape) else Modifier)
+                .then(
+                    if (border != null) Modifier.Companion.border(
+                        border,
+                        CircleShape
+                    ) else Modifier.Companion
+                )
                 .clip(CircleShape)
                 .then(backgroundModifier)
                 .clickable(
@@ -343,10 +361,10 @@ class NotificationManagerFragment : DialogFragment() {
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(
                         bounded = true,
-                        color = androidx.compose.ui.graphics.Color.Gray
+                        color = Color.Gray
                     )
                 ) { onClick() },
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Companion.Center,
         ) {
             content()
         }
@@ -358,14 +376,14 @@ class NotificationManagerFragment : DialogFragment() {
                       backgroundColor: Color = ColorPack.background,
                       border: BorderStroke = BorderStroke(
                           width = 0.5.dp,
-                          color = Color.Gray.copy(alpha = 0.1f)
+                          color = Color.Companion.Gray.copy(alpha = 0.1f)
                       ),
                       elevation: Dp = 2.dp,
                       enabled: Boolean = true,
                       horizontalPadding: Dp = 10.dp,
                       verticalPadding: Dp = 5.dp,
                       textColor: Color = ColorPack.secondary) {
-        val backgroundModifier = Modifier.background(backgroundColor)
+        val backgroundModifier = Modifier.Companion.background(backgroundColor)
         Box(
             modifier = modifier
                 .wrapContentWidth()
@@ -374,26 +392,26 @@ class NotificationManagerFragment : DialogFragment() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = Color.Black.copy(alpha = 0.4f),
-                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                    spotColor = Color.Companion.Black.copy(alpha = 0.4f),
+                    ambientColor = Color.Companion.Black.copy(alpha = 0.4f)
                 )
                 .clip(CircleShape)
                 .then(backgroundModifier)
-                .then(Modifier.border(border, CircleShape))
+                .then(Modifier.Companion.border(border, CircleShape))
                 .clickable(
                     enabled = enabled,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(
                         bounded = true,
-                        color = Color.Gray
+                        color = Color.Companion.Gray
                     )
                 ) { onClick() }
                 .padding(horizontal = horizontalPadding, vertical = verticalPadding)
         ) {
             Row(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier.Companion.fillMaxHeight(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Companion.CenterVertically,
             ) {
                 Text(
                     text = text,
@@ -410,7 +428,7 @@ class NotificationManagerFragment : DialogFragment() {
                 .fillMaxWidth()
                 .height(height)
                 .background(
-                    Brush.verticalGradient(
+                    Brush.Companion.verticalGradient(
                         colors = listOf(
                             ColorPack.surface.copy(alpha = 0.90f),
                             ColorPack.surface.copy(alpha = 0.0f)
@@ -428,47 +446,48 @@ class NotificationManagerFragment : DialogFragment() {
                 .padding(horizontal = 10.dp, vertical = 3.dp)
                 .uniformShadow()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color.Transparent),
+                .background(Color.Companion.Transparent),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(15.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
             border = BorderStroke(
                 width = 0.5.dp,
-                color = Color.Gray.copy(alpha = 0.1f)
+                color = Color.Companion.Gray.copy(alpha = 0.1f)
             ),
             colors = CardDefaults.cardColors(containerColor = ColorPack.background)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).fillMaxWidth()
+                modifier = Modifier.Companion.padding(horizontal = 10.dp, vertical = 5.dp)
+                    .fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.Companion.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Companion.CenterVertically
                 ) {
                     Column {
                         Text(
                             text = "通知访问权限",
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Companion.Bold,
                             color = ColorPack.primary,
-                            modifier = Modifier.padding(start = 0.dp)
+                            modifier = Modifier.Companion.padding(start = 0.dp)
                         )
-                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Spacer(modifier = Modifier.Companion.padding(top = 2.dp))
                         Text(
                             text = "访问您的通知并提供管理服务",
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.Normal,
+                            fontWeight = FontWeight.Companion.Normal,
                             color = ColorPack.secondary,
-                            modifier = Modifier.padding(start = 0.dp)
+                            modifier = Modifier.Companion.padding(start = 0.dp)
                         )
                     }
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Companion.CenterVertically
                     ) {
                         Switch(
                             checked = isPermissionGranted,
                             onCheckedChange = { changePermissionState() },
-                            modifier = Modifier.padding(end = 10.dp)
+                            modifier = Modifier.Companion.padding(end = 10.dp)
                         )
 
                     }
@@ -481,9 +500,9 @@ class NotificationManagerFragment : DialogFragment() {
                         Descriptions.textString_description_notificationPermission_off
                     },
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = FontWeight.Companion.Normal,
                     color = ColorPack.secondary,
-                    modifier = Modifier.padding(vertical = 5.dp)
+                    modifier = Modifier.Companion.padding(vertical = 5.dp)
                 )
             }
         }
@@ -491,66 +510,118 @@ class NotificationManagerFragment : DialogFragment() {
     @Composable
     fun SwitchCard(){
         //读取设置项
+        //设置项1 - 收集内容为空的通知
         val isCollectEmptyContent = remember { mutableStateOf(false) }
         fun updateLocalPrefRemember_isCollectEmptyContent (){
             isCollectEmptyContent.value = SettingsRequestCenter.get_PREFS_Notification_Keep_Empty(requireContext())
         }
+        //设置项2 - 允许可清除的通知被隐藏
+        val isNormalNotificationCanHide = remember { mutableStateOf(false) }
+        fun updateLocalPrefRemember_isNormalNotificationCanHide(){
+            isNormalNotificationCanHide.value = SettingsRequestCenter.get_PREFS_Notification_Hide_Normal(requireContext())
+        }
+        //集中读取设置
         LaunchedEffect(Unit) {
-            isCollectEmptyContent.value = SettingsRequestCenter.get_PREFS_Notification_Keep_Empty(requireContext())
+            isCollectEmptyContent.value =
+                SettingsRequestCenter.get_PREFS_Notification_Keep_Empty(requireContext())
+            isNormalNotificationCanHide.value =
+                SettingsRequestCenter.get_PREFS_Notification_Hide_Normal(requireContext())
         }
 
         Card(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 3.dp)
                 .uniformShadow()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.Transparent),
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                .background(Color.Companion.Transparent),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(15.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
             border = BorderStroke(
                 width = 0.5.dp,
-                color = Color.Gray.copy(alpha = 0.1f)
+                color = Color.Companion.Gray.copy(alpha = 0.1f)
             ),
             colors = CardDefaults.cardColors(containerColor = ColorPack.background)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).fillMaxWidth()
+                modifier = Modifier.Companion.padding(horizontal = 10.dp, vertical = 5.dp)
+                    .fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.Companion.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Companion.CenterVertically
                 ) {
                     Column {
                         Text(
                             text = "收集内容为空的通知",
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Companion.Bold,
                             color = ColorPack.primary,
-                            modifier = Modifier.padding(start = 0.dp)
+                            modifier = Modifier.Companion.padding(start = 0.dp)
                         )
-                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Spacer(modifier = Modifier.Companion.padding(top = 2.dp))
                         Text(
                             text = "收集没有标题和内容文本的通知",
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.Normal,
+                            fontWeight = FontWeight.Companion.Normal,
                             color = ColorPack.secondary,
-                            modifier = Modifier.padding(start = 0.dp)
+                            modifier = Modifier.Companion.padding(start = 0.dp)
                         )
                     }
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Companion.CenterVertically
                     ) {
                         Switch(
                             checked = isCollectEmptyContent.value,
                             onCheckedChange = {
-                                SettingsRequestCenter.set_PREFS_Notification_Keep_Empty(requireContext(), it)
+                                SettingsRequestCenter.set_PREFS_Notification_Keep_Empty(
+                                    requireContext(),
+                                    it
+                                )
                                 updateLocalPrefRemember_isCollectEmptyContent()
                             },
-                            modifier = Modifier.padding(end = 10.dp)
+                            modifier = Modifier.Companion.padding(end = 10.dp)
                         )
 
+                    }
+                }
+                Row(
+                    modifier = Modifier.Companion.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Companion.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "强制隐藏可清除的通知",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Companion.Bold,
+                            color = ColorPack.primary,
+                            modifier = Modifier.Companion.padding(start = 0.dp)
+                        )
+                        Spacer(modifier = Modifier.Companion.padding(top = 2.dp))
+                        Text(
+                            text = "允许可清除的通知被隐藏",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Companion.Normal,
+                            color = ColorPack.secondary,
+                            modifier = Modifier.Companion.padding(start = 0.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.Companion.CenterVertically
+                    ) {
+                        Switch(
+                            checked = isNormalNotificationCanHide.value,
+                            onCheckedChange = {
+                                SettingsRequestCenter.set_PREFS_Notification_Hide_Normal(
+                                    requireContext(),
+                                    it
+                                )
+                                updateLocalPrefRemember_isNormalNotificationCanHide()
+                            },
+                            modifier = Modifier.Companion.padding(end = 10.dp)
+                        )
                     }
                 }
             }
@@ -559,23 +630,23 @@ class NotificationManagerFragment : DialogFragment() {
     @Composable
     fun ButtonCard() {
         Box(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 3.dp)
         ) {
             Column(
-                modifier = Modifier.padding( vertical = 5.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.Companion.padding(vertical = 5.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.Companion.Start,
                 verticalArrangement = Arrangement.Top
             ) {
                 CapsuleButton(
                     text = "清除当前获取的通知",
-                    onClick = {  clearNotification(false) },
+                    onClick = { clearNotification(false) },
                 )
-                Spacer(modifier = Modifier.padding(top = 5.dp))
+                Spacer(modifier = Modifier.Companion.padding(top = 5.dp))
                 CapsuleButton(
                     text = "清除当前获取的通知并重新读取现存通知",
-                    onClick = {  clearNotification(true) },
+                    onClick = { clearNotification(true) },
                 )
             }
         }
@@ -583,7 +654,7 @@ class NotificationManagerFragment : DialogFragment() {
     @Composable
     fun ContentRoot(topBarHeight: Dp){
         Column(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(top = topBarHeight),
@@ -597,33 +668,33 @@ class NotificationManagerFragment : DialogFragment() {
     @Composable
     fun Explanation(){
         Card(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 15.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color.Transparent),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-            shape = RoundedCornerShape(20.dp),
+                .uniformShadow()
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
+                .background(Color.Companion.Transparent),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
             border = BorderStroke(
                 width = 0.5.dp,
-                color = Color.Gray.copy(alpha = 0.1f)
+                color = Color.Companion.Gray.copy(alpha = 0.1f)
             ),
             colors = CardDefaults.cardColors(
                 containerColor = ColorPack.background,
             ),
             onClick = {}
-        ){
+        ) {
             Column(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
                     .padding(10.dp)
             ) {
                 Text(
                     text = Descriptions.textString_description_notificationManager,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = FontWeight.Companion.Normal,
                     color = ColorPack.secondary,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.Companion.fillMaxWidth()
                 )
             }
         }
@@ -632,14 +703,14 @@ class NotificationManagerFragment : DialogFragment() {
     @Suppress("DEPRECATION")
     fun Modifier.uniformShadow(
         blurRadius: Float = 15f,
-        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
+        shadowColor: Color = Color.Companion.Black.copy(alpha = 0.1f)
     ) = this.drawBehind {
         drawIntoCanvas { canvas ->
             val paint = Paint().apply {
                 color = shadowColor
-                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                asFrameworkPaint().maskFilter = BlurMaskFilter(
                     blurRadius,
-                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                    BlurMaskFilter.Blur.NORMAL
                 )
             }
 
@@ -677,14 +748,14 @@ class NotificationManagerFragment : DialogFragment() {
         background = Color(0xFF121212),
     )
 
-    //权限状态切换
+    //检查权限
     private fun changePermissionState() {
         //跳转到设置页面
         val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
     }
-    //检查权限
+    private var isPermissionGranted by mutableStateOf(false)
     private fun checkPermission(){
         val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(requireContext())
         val isNotificationListenerEnabled = enabledListenerPackages.contains(requireContext().packageName)
@@ -705,6 +776,13 @@ class NotificationManagerFragment : DialogFragment() {
     //重新读取通知
     private fun gatherCurrentNotification(){
         NotificationManagerRepo.setServiceConnect("SERVICE_INTENT_FETCH_ALL")
+    }
+
+    //延后箱
+    private fun startDelayCanFragment(){
+        val fragment = NotificationManagerDelayCan.newInstance()
+        fragment.show(parentFragmentManager, "NotificationManagerDelayCan")
+        dismiss()
     }
 
     //统一日志控制

@@ -98,38 +98,46 @@ android {
 }
 
 dependencies {
-        implementation("com.google.android.gms:play-services-oss-licenses:17.2.2")
-        implementation(platform("androidx.compose:compose-bom:2023.10.01"))
-        implementation("androidx.compose.ui:ui")
-        implementation("androidx.compose.material:material")
-        implementation("androidx.compose.ui:ui-tooling-preview")
-        implementation("androidx.activity:activity-compose:1.8.0")
-        implementation("androidx.core:core-ktx:1.12.0")
-        implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-        // Compose
-        implementation("androidx.compose.foundation:foundation:1.8.3")
-        implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
-        implementation("androidx.compose.material3:material3:1.2.0")
-        implementation("androidx.compose.material:material-icons-extended:1.2.0")
+    implementation("com.google.android.gms:play-services-oss-licenses:17.2.2")
+    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Compose
+    implementation("androidx.compose.foundation:foundation:1.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.material:material-icons-extended:1.2.0")
     implementation(libs.androidx.compose.ui.graphics)
-    //androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.8.3")
 
-        // AndroidX
-        implementation(libs.androidx.core.ktx)
-        implementation(libs.androidx.appcompat)
-        implementation(libs.material)
-        implementation(libs.androidx.activity)
-        implementation(libs.androidx.constraintlayout)
-        implementation(libs.androidx.ui.android)
-        implementation(libs.androidx.material3.android)
 
-        // AndroidX Material3
-        //implementation(libs.androidx.material3)
-        implementation(libs.androidx.compose.material)
-        implementation(libs.androidx.ui)
-        implementation(libs.androidx.runtime)
-        //implementation(libs.androidx.animation)
-        implementation(libs.androidx.foundation.layout)
-        //implementation(libs.androidx.compose.testing)
-    }
+    //Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
+
+    //AndroidX
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.ui.android)
+    implementation(libs.androidx.material3.android)
+
+    //Material3
+    //implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.runtime)
+    //implementation(libs.androidx.animation)
+    implementation(libs.androidx.foundation.layout)
+    //implementation(libs.androidx.compose.testing)
+
+
+}
 

@@ -1,12 +1,12 @@
-package com.suming.reparacion.ActivityComponents
+package com.suming.reparacion.ActivityComponents.NotificationManager
 
 import android.app.Notification
-import android.content.Intent
-import android.os.IBinder
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.compose.ui.input.key.Key
+import com.suming.reparacion.ActivityComponents.NotificationManager.NotificationManagerRepo
+import com.suming.reparacion.DataPack.Connect
 import com.suming.reparacion.DataPack.NotificationPack
 import com.suming.reparacion.SettingsRequestCenter
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +23,6 @@ class NotificationManagerReceiver : NotificationListenerService() {
         const val EXTRA_CONTENT = "content"
     }
 
-    private val coroutine_observe = CoroutineScope(Dispatchers.Main)
 
     //LifeCycle
     //服务连接
@@ -33,51 +32,20 @@ class NotificationManagerReceiver : NotificationListenerService() {
         NotificationManagerRepo.setIsServiceOnline(true)
         //连接时获取所有已存在通知
         fetchAndStoreAllNotifications()
+
         //观察服务状态位
-        coroutine_observe.launch {
-            NotificationManagerRepo.service_connect.collect { newValue ->
-                consoleLog("服务连接状态变为: $newValue")
-                when(newValue) {
-                    "SERVICE_INTENT_FETCH_ALL" -> {
-                        fetchAndStoreAllNotifications()
-                    }
-                    "SERVICE_INTENT_GATHER_CURRENT" -> {
-                        fetchAndStoreAllNotifications()
-                    }
-                    "SERVICE_INTENT_CANCEL" -> {
-                        NotificationManagerRepo.clearServiceConnect()
-                        val key = NotificationManagerRepo.getNeedCancelKey()
-                        consoleLog("通知监听服务：收到取消通知指令 key $key")
-                        cancelNotification(key)
-                    }
-                    "SERVICE_INTENT_SNOOZE" -> {
-                        NotificationManagerRepo.clearServiceConnect()
-                        val key = NotificationManagerRepo.getNeedSnoozeKey()
-                        consoleLog("通知监听服务：收到隐藏通知指令 key $key")
-                        snoozeNotificationByKey(key, 2_592_000_000L)
-                    }
-                    "SERVICE_INTENT_DELAY_SECONDS" -> {
-                        NotificationManagerRepo.clearServiceConnect()
-                        val content = NotificationManagerRepo.getNeedDelayKey()
-                        consoleLog("通知监听服务：收到延后通知指令 key $content")
-                        delayNotificationByKey(content.first, content.second)
-                    }
-                }
-            }
-        }
-
-
+        startObserve()
     }
     //服务断开
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
         consoleLog("通知监听服务：已断开连接")
-        coroutine_observe.cancel()
+        stopObserve()
     }
     override fun onDestroy() {
         super.onDestroy()
         consoleLog("通知监听服务：已被销毁")
-        coroutine_observe.cancel()
+        stopObserve()
     }
     //收到新的通知
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -128,8 +96,46 @@ class NotificationManagerReceiver : NotificationListenerService() {
 
 
     //Functions
-    //获取所有通知
-    fun fetchAndStoreAllNotifications(){
+    private val coroutine_observe = CoroutineScope(Dispatchers.Main)
+    private fun startObserve(){
+        coroutine_observe.launch {
+            NotificationManagerRepo.service_connect.collect { newValue ->
+                if(newValue != ""){
+                    consoleLog("通知监听服务观察者：服务连接状态变为: $newValue")
+                }
+                when(newValue) {
+                    Connect.service_intent_fetch_all -> {
+                        consoleLog("通知监听服务观察者：收到 获取所有通知 指令")
+                        fetchAndStoreAllNotifications()
+                    }
+                    Connect.service_intent_cancel -> {
+                        NotificationManagerRepo.clearServiceConnect()
+                        val key = NotificationManagerRepo.getNeedCancelKey()
+                        consoleLog("通知监听服务观察者：收到取消通知指令 key $key")
+                        cancelNotification(key)
+                    }
+                    Connect.service_intent_snooze -> {
+                        NotificationManagerRepo.clearServiceConnect()
+                        val key = NotificationManagerRepo.getNeedSnoozeKey()
+                        consoleLog("通知监听服务观察者：收到隐藏通知指令 key $key")
+                        snoozeNotificationByKey(key)
+                    }
+                    Connect.service_intent_delay_seconds -> {
+                        NotificationManagerRepo.clearServiceConnect()
+                        val content = NotificationManagerRepo.getNeedDelayKey()
+                        consoleLog("通知监听服务观察者：收到延后通知指令 key ${content.first} seconds ${content.second}")
+                        delayNotificationByKey(content.first, content.second)
+                    }
+                }
+            }
+        }
+    }
+    private fun stopObserve(){
+        coroutine_observe.cancel()
+    }
+    //获取所有活动通知
+    private fun fetchAndStoreAllNotifications(){
+        consoleLog("通知监听服务：开始执行 获取所有通知")
         val activeNotifications = getActiveNotifications()
         if (activeNotifications != null) {
             for (sbn in activeNotifications) {
@@ -162,14 +168,15 @@ class NotificationManagerReceiver : NotificationListenerService() {
                 consoleLog("通知监听服务：遍历通知：ID:$uniqueID，包名：$packageName，标题：$title，内容：$text，是否持续：$isOngoing，发布时间：$postTime")
                 //内容为空时可以忽略(预留设置分支,设置项：保留内容为空的通知)
                 val shouldAdd = if(SettingsRequestCenter.get_PREFS_Notification_Keep_Empty(applicationContext)){
-                    //默认丢弃内容为空的通知
+                    //保留内容为空的通知(也就是全部保留)
+                    true
+                }else{
+                    //过滤掉内容为空的通知
                     if (text.isEmpty() && title.isEmpty()){
                         false
                     }else{
                         true
                     }
-                }else{
-                    true
                 }
                 //创建通知数据包
                 if (shouldAdd){
@@ -192,17 +199,30 @@ class NotificationManagerReceiver : NotificationListenerService() {
             }
         }
     }
+    //获取已被延时的通知
+    private fun fetchAndStoreSnoozedNotifications() {
+        consoleLog("通知监听服务：开始执行 获取已被延时的通知")
+        val snoozedNotifications = getSnoozedNotifications()
+        if (snoozedNotifications != null) {
+            for (sbn in snoozedNotifications) {
+                val uniqueID = UUID.randomUUID().toString()
+                consoleLog("通知监听服务：遍历通知：ID:$uniqueID，包名：${sbn.packageName}，标题：${sbn.notification?.extras?.getString(Notification.EXTRA_TITLE, "") ?: ""}，内容：${sbn.notification?.extras?.getString(Notification.EXTRA_TEXT, "") ?: ""}，发布时间：${sbn.postTime}")
+            }
+        }
+    }
     //取消通知
-    fun cancelNotification(key: Key) {
+    private fun cancelNotification(key: Key) {
+        consoleLog("通知监听服务：取消通知： key $key")
         cancelNotification(key)
-
     }
     //隐藏通知(极端延后)
-    fun snoozeNotificationByKey(key: String, delayMillis: Long) {
-        snoozeNotification(key, delayMillis)
+    private fun snoozeNotificationByKey(key: String) {
+        consoleLog("通知监听服务：隐藏通知指令 key $key")
+        snoozeNotification(key, 2_592_000_000L)
     }
     //延后通知(注意:传入是秒，需要转毫秒)
-    fun delayNotificationByKey(key: String,seconds: Int) {
+    private fun delayNotificationByKey(key: String,seconds: Int) {
+        consoleLog("通知监听服务：收到延后通知指令 key $key, seconds $seconds")
         snoozeNotification(key, (seconds * 1000).toLong())
     }
 

@@ -1,8 +1,8 @@
-package com.suming.reparacion.ActivityComponents
+package com.suming.reparacion.ActivityComponents.NotificationManager
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.BlurMaskFilter
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -23,7 +23,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -35,36 +34,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LockClock
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,32 +72,29 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.DialogFragment.STYLE_NO_TITLE
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.AddonTools.showCustomToast
 import com.suming.reparacion.DataPack.Descriptions
-import com.suming.reparacion.DataPack.NotificationPack
 import com.suming.reparacion.R
-import com.suming.reparacion.SettingsRequestCenter
 import kotlinx.coroutines.launch
 
-class NotificationManagerTrashCan: DialogFragment() {
+class NotificationManagerDelay  : DialogFragment() {
     companion object {
-        fun newInstance(): NotificationManagerTrashCan = NotificationManagerTrashCan().apply { arguments = bundleOf(  ) }
+        fun newInstance(targetNotificationKey: String,packageName: String): NotificationManagerDelay  = NotificationManagerDelay().apply { arguments =
+            bundleOf(
+                "targetNotificationKey" to targetNotificationKey,
+                "targetPackageName" to packageName,
+            )
+        }
     }
-
-
-    //composeRoot
-    private lateinit var ComposeRoot: ComposeView
-
-    private var isPermissionGranted by mutableStateOf(false)
+    private val targetNotificationKey: String get() = arguments?.getString("targetNotificationKey") ?: ""
+    private val targetPackageName: String get() = arguments?.getString("targetPackageName") ?: ""
 
 
     @Suppress("DEPRECATION")
@@ -116,8 +103,7 @@ class NotificationManagerTrashCan: DialogFragment() {
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
             //横屏时隐藏状态栏
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                ViewCompat.setOnApplyWindowInsetsListener(dialog?.window?.decorView ?: return) { view, insets -> WindowInsetsCompat.CONSUMED }
-
+                ViewCompat.setOnApplyWindowInsetsListener(dialog?.window?.decorView ?: return) { _, _ -> WindowInsetsCompat.CONSUMED }
                 /*
                 dialog?.window?.decorView?.post { dialog?.window?.insetsController?.let { controller ->
                     controller.hide(WindowInsets.Type.statusBars())
@@ -125,7 +111,6 @@ class NotificationManagerTrashCan: DialogFragment() {
                 } }
 
                  */
-
                 //三星专用:显示到挖空区域
                 dialog?.window?.attributes?.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             } else {
@@ -190,15 +175,13 @@ class NotificationManagerTrashCan: DialogFragment() {
                 return@setOnKeyListener false
             }
         }
-    }//</onViewCreated>
+    }
 
     override fun onResume() {
         super.onResume()
         consoleLog("Fragment onResume")
-        checkPermission()
     }
 
-    //Lifecycle Functions
     private fun init(view: View){
         //初始化composeRoot
         ComposeRoot = view.findViewById(R.id.fragment_compose_root)
@@ -208,6 +191,8 @@ class NotificationManagerTrashCan: DialogFragment() {
         }
     }
 
+
+
     //Compose Functions
     @Composable
     fun ComposeRoot() {
@@ -215,9 +200,11 @@ class NotificationManagerTrashCan: DialogFragment() {
         isDarkMode = isSystemInDarkTheme()
         ColorPack = if (isDarkMode) DarkColorScheme else LightColorScheme
         //使用Box作为根布局
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(ColorPack.surface)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(ColorPack.surface)
+        ) {
 
             //顶部栏高度值
             val statusBarHeight = WindowInsets.statusBars.getTop(LocalDensity.current)
@@ -250,6 +237,7 @@ class NotificationManagerTrashCan: DialogFragment() {
             })
         }
     }
+    private lateinit var ComposeRoot: ComposeView
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
@@ -262,9 +250,8 @@ class NotificationManagerTrashCan: DialogFragment() {
                 .onGloballyPositioned { coordinates ->
                     onHeightMeasured(coordinates.size.height)
                 },
-            color = androidx.compose.ui.graphics.Color.Transparent,
+            color = Color.Transparent,
         ) {
-            //顶部栏内容
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -287,7 +274,7 @@ class NotificationManagerTrashCan: DialogFragment() {
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
-                                color = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.1f)
+                                color = Color.Gray.copy(alpha = 0.1f)
                             ),
                             modifier = Modifier.padding(start = 10.dp)
                         ) {
@@ -300,7 +287,7 @@ class NotificationManagerTrashCan: DialogFragment() {
                         }
                         //标题文本
                         Text(
-                            text = "已隐藏的通知",
+                            text = "延后",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = ColorPack.primary,
@@ -312,7 +299,24 @@ class NotificationManagerTrashCan: DialogFragment() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-
+                        //已延后的通知
+                        CircleButton(
+                            onClick = { startDelayCanFragment() },
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
+                            size = 40.dp,
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = Color.Gray.copy(alpha = 0.1f)
+                            ),
+                            modifier = Modifier.padding(end = 10.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.LockClock,
+                                contentDescription = "查看已被延后的通知",
+                                modifier = Modifier.background(Color.Transparent),
+                                tint = ColorPack.secondary
+                            )
+                        }
                     }
                 }
             }
@@ -339,10 +343,15 @@ class NotificationManagerTrashCan: DialogFragment() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
-                    ambientColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f)
+                    spotColor = Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
                 )
-                .then(if (border != null) Modifier.border(border, CircleShape) else Modifier)
+                .then(
+                    if (border != null) Modifier.border(
+                        border,
+                        CircleShape
+                    ) else Modifier
+                )
                 .clip(CircleShape)
                 .then(backgroundModifier)
                 .clickable(
@@ -350,12 +359,64 @@ class NotificationManagerTrashCan: DialogFragment() {
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(
                         bounded = true,
-                        color = androidx.compose.ui.graphics.Color.Gray
+                        color = Color.Gray
                     )
                 ) { onClick() },
             contentAlignment = Alignment.Center,
         ) {
             content()
+        }
+    }
+    @Composable
+    fun CapsuleButton(onClick: () -> Unit,
+                      modifier: Modifier = Modifier,
+                      text: String,
+                      backgroundColor: Color = ColorPack.background,
+                      border: BorderStroke = BorderStroke(
+                          width = 0.5.dp,
+                          color = Color.Gray.copy(alpha = 0.1f)
+                      ),
+                      elevation: Dp = 2.dp,
+                      enabled: Boolean = true,
+                      horizontalPadding: Dp = 10.dp,
+                      verticalPadding: Dp = 5.dp,
+                      textColor: Color = ColorPack.secondary) {
+        val backgroundModifier = Modifier.background(backgroundColor)
+        Box(
+            modifier = modifier
+                .wrapContentWidth()
+                .height(35.dp)
+                .shadow(
+                    elevation = elevation,
+                    shape = CircleShape,
+                    clip = false,
+                    spotColor = Color.Black.copy(alpha = 0.4f),
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                )
+                .clip(CircleShape)
+                .then(backgroundModifier)
+                .then(Modifier.border(border, CircleShape))
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(
+                        bounded = true,
+                        color = Color.Gray
+                    )
+                ) { onClick() }
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    color = textColor,
+                )
+            }
         }
     }
     @Composable
@@ -375,6 +436,45 @@ class NotificationManagerTrashCan: DialogFragment() {
         )
     }
     @Composable
+    fun ButtonCard() {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top
+            ) {
+                CapsuleButton(
+                    text = "延后1分钟",
+                    onClick = { delayNotificationByKey(targetNotificationKey,60) },
+                )
+                Spacer(modifier = Modifier.padding(top = 5.dp))
+                CapsuleButton(
+                    text = "延后30分钟",
+                    onClick = { delayNotificationByKey(targetNotificationKey,30*60) },
+                )
+                Spacer(modifier = Modifier.padding(top = 5.dp))
+                CapsuleButton(
+                    text = "延后1小时",
+                    onClick = { delayNotificationByKey(targetNotificationKey,60*60) },
+                )
+                Spacer(modifier = Modifier.padding(top = 5.dp))
+                CapsuleButton(
+                    text = "延后6小时",
+                    onClick = { delayNotificationByKey(targetNotificationKey,6*60*60) },
+                )
+                Spacer(modifier = Modifier.padding(top = 5.dp))
+                CapsuleButton(
+                    text = "延后1天",
+                    onClick = { delayNotificationByKey(targetNotificationKey,24*60*60) },
+                )
+            }
+        }
+    }
+    @Composable
     fun ContentRoot(topBarHeight: Dp){
         Column(
             modifier = Modifier
@@ -382,92 +482,12 @@ class NotificationManagerTrashCan: DialogFragment() {
                 .verticalScroll(rememberScrollState())
                 .padding(top = topBarHeight),
         ) {
-
-        }
-    }
-    @SuppressLint("UnrememberedMutableState")
-    @Composable
-    fun NoticeListColumn(noticeList: List<NotificationPack>, animatedTopPadding: Dp) {
-        //指定边距
-        val contentPadding by derivedStateOf {
-            PaddingValues(
-                top = animatedTopPadding,
-                bottom = 400.dp,
-                start = 0.dp,
-                end = 0.dp
-            )
-        }
-        //点击菜单
-        var selectedUUID by remember { mutableStateOf<String?>(null) }
-        var showMenu by remember { mutableStateOf(false) }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = contentPadding,
-            verticalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            items(noticeList) { notice ->
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    NoticeCard(
-                        packageName = notice.packageName,
-                        title = notice.title,
-                        text = notice.text,
-                        onClick = { selectedUUID = notice.uniqueID; showMenu = true }
-                    )
-                    if (selectedUUID == notice.uniqueID) {
-                        DropdownMenu(
-                            expanded = true,
-                            onDismissRequest = { selectedUUID = null },
-                            offset = DpOffset(
-                                x = 100.dp,
-                                y = 0.dp
-                            ),
-                            modifier = Modifier.wrapContentSize().background(ColorPack.background)
-                        ) {
-                            Text(
-                                text = "ID $selectedUUID",
-                                fontSize = 10.sp,
-                                color = ColorPack.secondary,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
-                            )
-                            Text(
-                                text = "包名 ${notice.packageName}",
-                                fontSize = 10.sp,
-                                color = ColorPack.secondary,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "查看详情", fontSize = 12.sp, color = ColorPack.primary) },
-                                onClick = {
-
-                                    selectedUUID = null
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "进入系统通知设置", fontSize = 12.sp, color = ColorPack.primary) },
-                                onClick = {
-                                    //打开系统通知设置页面
-
-                                    //关闭菜单
-                                    selectedUUID = null
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "忽略该应用", fontSize = 12.sp, color = ColorPack.primary) },
-                                onClick = {
-
-                                    selectedUUID = null
-                                }
-                            )
-                        }
-                    }
-                }
-            }
+            TargetInfoCard()
+            ButtonCard()
         }
     }
     @Composable
-    fun NoticeCard(packageName: String, title: String, text: String, onClick: () -> Unit) {
+    fun TargetInfoCard(){
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -476,39 +496,39 @@ class NotificationManagerTrashCan: DialogFragment() {
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color.Transparent),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(15.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
             border = BorderStroke(
                 width = 0.5.dp,
                 color = Color.Gray.copy(alpha = 0.1f)
             ),
-            colors = CardDefaults.cardColors(containerColor = ColorPack.background,),
-            onClick = onClick
-        ) {
+            colors = CardDefaults.cardColors(containerColor = ColorPack.background)
+        ){
             Column(
-                modifier = Modifier.fillMaxWidth().padding(13.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
             ) {
-                //App名称
                 Text(
-                    text = packageName,
-                    fontSize = 9.sp,
-                    color = ColorPack.secondary
+                    text = "确认您正在操作的通知信息",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = ColorPack.secondary,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                //大小标题间距
-                Spacer(modifier = Modifier.height(4.dp))
-                //大标题
+                Spacer(modifier = Modifier.padding(top = 5.dp))
                 Text(
-                    text = title,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorPack.primary
-                )
-                //大小标题间距
-                Spacer(modifier = Modifier.height(4.dp))
-                //小标题或描述
-                Text(
-                    text = text,
+                    text = "ID：$targetNotificationKey",
                     fontSize = 12.sp,
-                    color = ColorPack.secondary
+                    fontWeight = FontWeight.Normal,
+                    color = ColorPack.secondary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "包名：$targetPackageName",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = ColorPack.secondary,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -522,9 +542,9 @@ class NotificationManagerTrashCan: DialogFragment() {
         drawIntoCanvas { canvas ->
             val paint = Paint().apply {
                 color = shadowColor
-                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                asFrameworkPaint().maskFilter = BlurMaskFilter(
                     blurRadius,
-                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                    BlurMaskFilter.Blur.NORMAL
                 )
             }
 
@@ -562,35 +582,22 @@ class NotificationManagerTrashCan: DialogFragment() {
         background = Color(0xFF121212),
     )
 
-    //权限状态切换
-    private fun changePermissionState() {
-        //跳转到设置页面
-        val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(intent)
-    }
-    //检查权限
-    private fun checkPermission(){
-        val enabledListenerPackages = NotificationManagerCompat.getEnabledListenerPackages(requireContext())
-        val isNotificationListenerEnabled = enabledListenerPackages.contains(requireContext().packageName)
-        if(isNotificationListenerEnabled){
-            isPermissionGranted = true
-        }else{
-            isPermissionGranted = false
-        }
-    }
-    //清除通知
-    private fun clearNotification(reload: Boolean){
-        NotificationManagerRepo.clearAll()
-        if(reload){
-            gatherCurrentNotification()
-        }
+
+
+    //延后通知(注意:传入秒,别传毫秒)
+    private fun delayNotificationByKey(key: String,seconds: Int){
+        NotificationManagerRepo.setNeedDelayKey(key,seconds)
+        requireContext().showCustomToast("已尝试延后该通知")
         dismiss()
     }
-    //重新读取通知
-    private fun gatherCurrentNotification(){
-        NotificationManagerRepo.setServiceConnect("SERVICE_INTENT_FETCH_ALL")
+    //延后箱
+    private fun startDelayCanFragment(){
+        val fragment = NotificationManagerDelayCan.newInstance()
+        fragment.show(parentFragmentManager, "NotificationManagerDelayCan")
+        dismiss()
     }
+
+
 
     //统一日志控制
     private fun consoleLog(msg: String, mark: Boolean = true) {
@@ -598,6 +605,5 @@ class NotificationManagerTrashCan: DialogFragment() {
             Log.d("SuMing", msg)
         }
     }
-
 
 }

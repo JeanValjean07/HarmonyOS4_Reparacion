@@ -1,18 +1,17 @@
-package com.suming.reparacion.ActivityComponents
+package com.suming.reparacion.ActivityComponents.NotificationManager
 
-import android.annotation.SuppressLint
+import com.suming.reparacion.DataPack.Connect
 import com.suming.reparacion.DataPack.NotificationPack
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-@SuppressLint("LocalVariableName")
 object NotificationManagerRepo {
 
 
     private val _list = MutableStateFlow(listOf<NotificationPack>())
     val list: StateFlow<List<NotificationPack>> = _list.asStateFlow()
-
+    //添加通知
     fun add(notificationPack: NotificationPack) {
         val currentList = _list.value.toMutableList()
         //只判断包名,标题,内容是否相同
@@ -35,17 +34,18 @@ object NotificationManagerRepo {
 
         _list.value = currentList
     }
-
+    //获取通知数量
     fun getCount() = _list.value.size
-
+    //更新通知数量
     fun updateCount(){
         setNotificationCount(getCount())
     }
-
+    //清除缓存列表内所有通知
     fun clearAll(){
         _list.value = listOf()
         updateCount()
     }
+
 
     //取消一条通知
     private var needCancelKey = ""
@@ -56,7 +56,7 @@ object NotificationManagerRepo {
     }
     fun setNeedCancelKey(key: String){
         needCancelKey = key
-        setServiceConnect("SERVICE_INTENT_CANCEL")
+        setServiceConnect(Connect.service_intent_cancel)
     }
     //隐藏一条通知(极端延长来实现)
     private var needSnoozeKey = ""
@@ -67,7 +67,7 @@ object NotificationManagerRepo {
     }
     fun setNeedSnoozeKey(key: String){
         needSnoozeKey = key
-        setServiceConnect("SERVICE_INTENT_SNOOZE")
+        setServiceConnect(Connect.service_intent_snooze)
     }
     //延后一条通知
     private var needDelayKey = ""
@@ -82,7 +82,7 @@ object NotificationManagerRepo {
     fun setNeedDelayKey(key: String,seconds: Int){
         needDelayKey = key
         delaySeconds = seconds
-        setServiceConnect("SERVICE_INTENT_DELAY_SECONDS")
+        setServiceConnect(Connect.service_intent_delay_seconds)
     }
 
 

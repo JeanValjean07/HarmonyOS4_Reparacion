@@ -190,17 +190,25 @@ object SettingsRequestCenter {
 
         return PREFS_Notification_Keep_Empty == 1
     }
-
-
-
-
-
-
-
-
-
-
-
+    //设置项：允许清除通知被隐藏
+    private var PREFS_Notification_Hide_Normal = -1
+    fun set_PREFS_Notification_Hide_Normal(context: Context,isHide: Boolean){
+        if(PREFS_Notification == null){
+            PREFS_Notification = context.getSharedPreferences("PREFS_Notification", 0)
+        }
+        PREFS_Notification_Hide_Normal = if (isHide) 1 else 0
+        PREFS_Notification?.edit { putInt("PREFS_Notification_Hide_Normal", PREFS_Notification_Hide_Normal) }
+    }
+    fun get_PREFS_Notification_Hide_Normal(context: Context): Boolean {
+        if (PREFS_Notification == null) {
+            PREFS_Notification = context.getSharedPreferences("PREFS_Notification", 0)
+        }
+        PREFS_Notification_Hide_Normal = PREFS_Notification?.getInt("PREFS_Notification_Hide_Normal", -1) ?: -1
+        if (PREFS_Notification_Hide_Normal == -1) {
+            PREFS_Notification?.edit { putInt("PREFS_Notification_Hide_Normal", 0) }
+        }
+        return PREFS_Notification_Hide_Normal == 1
+    }
 
 
 

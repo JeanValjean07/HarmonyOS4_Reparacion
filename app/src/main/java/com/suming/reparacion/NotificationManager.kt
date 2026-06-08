@@ -1,11 +1,10 @@
 package com.suming.reparacion
 
-import android.R.attr.x
-import android.R.attr.y
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -19,7 +18,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +44,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
@@ -73,30 +70,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.suming.reparacion.ActivityComponents.NotificationManagerFragment
-import com.suming.reparacion.ActivityComponents.NotificationManagerRepo
-import com.suming.reparacion.ActivityComponents.NotificationManagerViewModel
+import com.suming.reparacion.ActivityComponents.NotificationManager.NotificationManagerDelay
+import com.suming.reparacion.ActivityComponents.NotificationManager.NotificationManagerFragment
+import com.suming.reparacion.ActivityComponents.NotificationManager.NotificationManagerRepo
+import com.suming.reparacion.AddonTools.showCustomToast
 import com.suming.reparacion.DataPack.NotificationPack
-
 
 class NotificationManager: AppCompatActivity() {
 
@@ -125,6 +117,13 @@ class NotificationManager: AppCompatActivity() {
         }
 
     }
+
+    override fun onResume() {
+        super.onResume()
+        //刷新权限
+        checkPermission()
+    }
+
 
 
     @Composable
@@ -383,7 +382,7 @@ class NotificationManager: AppCompatActivity() {
         val contentPadding by derivedStateOf {
             PaddingValues(
                 top = animatedTopPadding,
-                bottom = 400.dp,
+                bottom = 200.dp,
                 start = 0.dp,
                 end = 0.dp
             )
@@ -406,6 +405,7 @@ class NotificationManager: AppCompatActivity() {
                         text = notice.text,
                         onClick = { selectedUUID = notice.uniqueID; showMenu = true }
                     )
+                    //显示选项菜单
                     if (selectedUUID == notice.uniqueID) {
                         DropdownMenu(
                             expanded = true,
@@ -445,19 +445,28 @@ class NotificationManager: AppCompatActivity() {
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = "隐藏", fontSize = 12.sp, color = ColorPack.primary) },
+                                text = { Text(text = "进入应用管理页面", fontSize = 12.sp, color = ColorPack.primary) },
                                 onClick = {
-                                    //隐藏通知
-                                    snoozeNotificationByKey(notice.key)
+                                    //打开应用管理页面
+                                    openAppSettingPage(notice.packageName)
                                     //关闭菜单
                                     selectedUUID = null
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = "延后(测试10s)", fontSize = 12.sp, color = ColorPack.primary) },
+                                text = { Text(text = "隐藏", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+                                    //隐藏通知
+                                    snoozeNotificationByKey(notice.key, notice.isOngoing)
+                                    //关闭菜单
+                                    selectedUUID = null
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "延后", fontSize = 12.sp, color = ColorPack.primary) },
                                 onClick = {
                                     //延后通知
-                                    delayNotificationByKey(notice.key,10)
+                                    startDelayFragment(notice.key,notice.packageName)
                                     //关闭菜单
                                     selectedUUID = null
                                 }
@@ -695,29 +704,35 @@ class NotificationManager: AppCompatActivity() {
         background = Color(0xFF121212),
     )
 
-    //处理卡片点击事件
-    private fun onClickListItem(toolIntent: String) {
-        consoleLog("接收到卡片点击事件丨事件意图字段：$toolIntent")
 
-        //执行
-        when(toolIntent){
-
-        }
-
-    }
 
     //划掉通知
     private fun cancelNotification(key: String){
         NotificationManagerRepo.setNeedCancelKey(key)
     }
     //隐藏通知(极端延后)
-    private fun snoozeNotificationByKey(key: String){
-        NotificationManagerRepo.setNeedSnoozeKey(key)
+    private fun snoozeNotificationByKey(key: String, isOngoing: Boolean){
+        //先检查:非常驻通知不允许隐藏,直接划掉,除非设置特殊允许了
+        if(SettingsRequestCenter.get_PREFS_Notification_Hide_Normal(this)){
+            //隐藏通知
+            NotificationManagerRepo.setNeedSnoozeKey(key)
+        }else{
+            if(isOngoing){
+                NotificationManagerRepo.setNeedSnoozeKey(key)
+            }else{
+                showCustomToast("该通知不是固定通知,无需隐藏,划掉即可,已帮您划掉")
+                cancelNotification(key)
+            }
+        }
     }
     //延后通知
+    private fun startDelayFragment(targetNotificationKey: String,packageName: String){
+        val fragment = NotificationManagerDelay.newInstance(targetNotificationKey,packageName)
+        fragment.show(supportFragmentManager, "NotificationManagerDelay")
+    }
     private fun delayNotificationByKey(key: String,seconds: Int){
         NotificationManagerRepo.setNeedDelayKey(key,seconds)
-    }
+    } //注意传入秒即可,服务自带转毫秒
 
 
     //检查权限
@@ -760,6 +775,13 @@ class NotificationManager: AppCompatActivity() {
     //打开系统通知设置页面
     private fun openNotificationSetting(packageName: String){
         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        startActivity(intent)
+    }
+    //打开应用管理页面
+    private fun openAppSettingPage(packageName: String){
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
         startActivity(intent)
     }
 

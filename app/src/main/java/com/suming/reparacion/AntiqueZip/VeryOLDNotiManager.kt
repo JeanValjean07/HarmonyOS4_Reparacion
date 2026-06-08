@@ -60,7 +60,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.suming.reparacion.ApplicationManager
-import com.suming.reparacion.ActivityComponents.NotificationManagerReceiver
+import com.suming.reparacion.ActivityComponents.NotificationManager.NotificationManagerReceiver
 import com.suming.reparacion.R
 import com.suming.reparacion.Receiver
 import kotlinx.coroutines.Job

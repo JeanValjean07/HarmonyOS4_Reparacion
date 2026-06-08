@@ -439,9 +439,9 @@ class DarkModeActivity: AppCompatActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 15.dp)
+                .uniformShadow()
                 .clip(RoundedCornerShape(20.dp))
                 .background(Color.Transparent),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             shape = RoundedCornerShape(20.dp),
             border = BorderStroke(
                 width = 0.5.dp,
@@ -461,12 +461,14 @@ class DarkModeActivity: AppCompatActivity() {
             ) {
                 Text(
                     text = Descriptions.textString_description_darkmodepaper,
-                    style = TextStyle(fontSize = 14.sp),
-                    color = colorResource(id = R.color.HeadText),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = ColorPack.primary,
                 )
             }
         }
     }
+    //访问xml颜色表 colorResource(id = R.color.HeadText)
 
     //Functions
     //注册开关行为
