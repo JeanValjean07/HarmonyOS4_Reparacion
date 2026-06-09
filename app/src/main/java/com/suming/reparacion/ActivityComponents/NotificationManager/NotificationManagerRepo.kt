@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object NotificationManagerRepo {
 
-
+    //活跃通知列表
     private val _list = MutableStateFlow(listOf<NotificationPack>())
     val list: StateFlow<List<NotificationPack>> = _list.asStateFlow()
     //添加通知
@@ -44,6 +44,33 @@ object NotificationManagerRepo {
     fun clearAll(){
         _list.value = listOf()
         updateCount()
+    }
+
+    //已延后的通知列表
+    private val _delayList = MutableStateFlow(listOf<NotificationPack>())
+    val delayList: StateFlow<List<NotificationPack>> = _delayList.asStateFlow()
+    //添加已延后的通知
+    fun addDelay(notificationPack: NotificationPack) {
+        val currentList = _delayList.value.toMutableList()
+        //只判断包名,标题,内容是否相同
+        val existingIndex = currentList.indexOfFirst {
+            it.packageName == notificationPack.packageName &&
+                    it.title == notificationPack.title &&
+                    it.text == notificationPack.text
+        }
+
+        if (existingIndex >= 0) {
+            //已存在时：覆盖成最新
+            currentList[existingIndex] = notificationPack
+            //或把旧的移到顶部,丢掉新的
+            //val notification = currentList.removeAt(existingIndex)
+            //currentList.add(0, notification)
+        } else {
+            //不存在时：直接添加到列表顶部
+            currentList.add(0, notificationPack)
+        }
+
+        _delayList.value = currentList
     }
 
 
@@ -84,7 +111,22 @@ object NotificationManagerRepo {
         delaySeconds = seconds
         setServiceConnect(Connect.service_intent_delay_seconds)
     }
+    //取消延后一条通知
+    private var needCancelDelayKey = ""
+    fun getNeedCancelDelayKey(): String {
+        val tempKey = needCancelDelayKey
+        needCancelDelayKey = ""
 
+        return tempKey
+    }
+    fun cancelDelayNotification(key: String){
+        needCancelDelayKey = key
+        setServiceConnect(Connect.service_intent_delay_cancel)
+    }
+    //获取所有已延后的通知
+    fun getDelayList() {
+        setServiceConnect(Connect.service_intent_get_delay_list)
+    }
 
 
     //服务观察状态

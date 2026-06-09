@@ -126,6 +126,18 @@ class NotificationManagerReceiver : NotificationListenerService() {
                         consoleLog("通知监听服务观察者：收到延后通知指令 key ${content.first} seconds ${content.second}")
                         delayNotificationByKey(content.first, content.second)
                     }
+                    Connect.service_intent_get_delay_list -> {
+                        NotificationManagerRepo.clearServiceConnect()
+
+                        fetchAndStoreSnoozedNotifications()
+                    }
+                    Connect.service_intent_delay_cancel -> {
+                        NotificationManagerRepo.clearServiceConnect()
+                        val key = NotificationManagerRepo.getNeedCancelDelayKey()
+                        consoleLog("通知监听服务观察者：收到取消延后通知指令 key ${key} ")
+
+                        delayNotificationByKey(key, 1)
+                    }
                 }
             }
         }
@@ -206,7 +218,28 @@ class NotificationManagerReceiver : NotificationListenerService() {
         if (snoozedNotifications != null) {
             for (sbn in snoozedNotifications) {
                 val uniqueID = UUID.randomUUID().toString()
-                consoleLog("通知监听服务：遍历通知：ID:$uniqueID，包名：${sbn.packageName}，标题：${sbn.notification?.extras?.getString(Notification.EXTRA_TITLE, "") ?: ""}，内容：${sbn.notification?.extras?.getString(Notification.EXTRA_TEXT, "") ?: ""}，发布时间：${sbn.postTime}")
+                val packageName = sbn.packageName
+                val postTime = sbn.postTime
+                val isOngoing = sbn.isOngoing
+                val key = sbn.key
+                val notification = sbn.notification
+                val title = notification?.extras?.getString(Notification.EXTRA_TITLE, "") ?: ""
+                val text = notification?.extras?.getString(Notification.EXTRA_TEXT, "") ?: ""
+                consoleLog("通知监听服务：遍历通知：ID:$uniqueID，包名：$packageName，标题：$title，内容：$text，是否持续：$isOngoing，发布时间：$postTime")
+                //创建通知数据包
+                val notificationPack = NotificationPack(
+                    uniqueID = uniqueID,
+                    key = key,
+                    packageName = packageName,
+                    postTime = postTime,
+                    isOngoing = isOngoing,
+                    title = title,
+                    text = text,
+                )
+                //添加到仓库
+                NotificationManagerRepo.addDelay(notificationPack)
+                //刷新状态
+                NotificationManagerRepo.setServiceConnect("")
             }
         }
     }

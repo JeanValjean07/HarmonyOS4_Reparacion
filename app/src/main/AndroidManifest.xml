@@ -36,45 +36,54 @@
         </activity>
         <!-- 深色模式壁纸 -->
         <activity android:name="com.suming.reparacion.DarkModeActivity"
+            android:label="深色模式壁纸"
             android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
         <activity android:name="com.suming.reparacion.DarkModePure"
+            android:label="深色模式壁纸纯净版"
             android:excludeFromRecents="true"
             android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
         <!-- 通知管理 -->
         <activity android:name="com.suming.reparacion.NotificationManager"
+            android:label="通知管理"
             android:exported="true"
             android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             />
         <!-- 应用管理 -->
         <activity android:name="com.suming.reparacion.ApplicationManager"
+            android:label="应用管理"
             android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
         <!-- 后台检查 -->
         <activity android:name="com.suming.reparacion.BackgroundCheckActivity"
+            android:label="后台检查"
             android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             android:exported="true"
             />
         <!-- 音量控制 -->
         <activity android:name="com.suming.reparacion.VolumeControl"
+            android:label="音量控制"
             android:exported="true"
             />
 
 
         <!-- 指南 -->
         <activity android:name="com.suming.reparacion.GuidanceActivity"
+            android:label="指南与帮助"
             android:exported="true"
             />
         <!-- 设置 -->
         <activity android:name="com.suming.reparacion.SettingsActivity"
+            android:label="设置"
             android:exported="true"
             />
         <!-- 关于 -->
         <activity android:name="com.suming.reparacion.AboutAppActivity"
+            android:label="关于"
             android:exported="true"
             />
 
@@ -143,6 +152,7 @@
             tools:ignore="DiscouragedApi,LockedOrientationActivity"/>
         <!-- TrashCan - 存档不再使用的旧代码 -->
         <activity android:name="com.suming.reparacion.AntiqueZip.VeryOLDNotiManager"
+            android:label="老式通知管理页"
             android:exported="true"
             android:theme="@style/BASIC_ACTIVITY_NO_BAR"
             />

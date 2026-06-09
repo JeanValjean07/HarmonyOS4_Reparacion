@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.graphics.BlurMaskFilter
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -57,6 +58,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -87,6 +89,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.DataPack.Connect
 import com.suming.reparacion.DataPack.NotificationPack
 import com.suming.reparacion.R
 import kotlinx.coroutines.launch
@@ -161,13 +164,15 @@ class NotificationManagerDelayCan: DialogFragment() {
         //集中初始化
         init(view)
 
+        //观察通知列表
+        //需要在compose函数中发起观察
+        //发起收集
+        NotificationManagerRepo.setServiceConnect(Connect.service_intent_get_delay_list)
+
         //设置composeRoot
         ComposeRoot.setContent {
             ComposeRoot()
         }
-
-
-
 
         //系统手势监听
         lifecycleScope.launch {
@@ -180,7 +185,7 @@ class NotificationManagerDelayCan: DialogFragment() {
                 return@setOnKeyListener false
             }
         }
-    }//</onViewCreated>
+    }
 
     override fun onResume() {
         super.onResume()
@@ -214,26 +219,17 @@ class NotificationManagerDelayCan: DialogFragment() {
         ) {
 
             //顶部栏高度值
-            val statusBarHeight = WindowInsets.Companion.statusBars.getTop(LocalDensity.current)
-            var topBarHeight by remember { mutableIntStateOf(300) }
+            val statusBarHeight = 0
+            var topBarHeight by remember { mutableIntStateOf(0) }
             val topPaddingDp = with(LocalDensity.current) {
-                (statusBarHeight + topBarHeight).toDp()
+                    (statusBarHeight + topBarHeight).toDp()
             }
 
-            //顶部栏高度值动画 也可不使用动画单纯传值
-            //曲线可选 CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
-            val animatedTopPadding by animateDpAsState(
-                targetValue = topPaddingDp,
-                animationSpec = tween(
-                    durationMillis = 300,
-                    easing = FastOutSlowInEasing
-                )
-            )
 
             //最底层
 
             //content
-            ContentRoot(animatedTopPadding)
+            ContentRoot(topPaddingDp)
 
 
             //最顶层
@@ -250,7 +246,7 @@ class NotificationManagerDelayCan: DialogFragment() {
     @Composable
     fun AdvancedTopBar(onHeightMeasured: (height: Int) -> Unit) {
         Surface(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .height(60.dp)
@@ -263,16 +259,16 @@ class NotificationManagerDelayCan: DialogFragment() {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(59.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Companion.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     //左侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.Companion.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         //关闭按钮
                         CircleButton(
@@ -283,12 +279,12 @@ class NotificationManagerDelayCan: DialogFragment() {
                                 width = 0.5.dp,
                                 color = Color.Gray.copy(alpha = 0.1f)
                             ),
-                            modifier = Modifier.Companion.padding(start = 10.dp)
+                            modifier = Modifier.padding(start = 10.dp)
                         ) {
                             Icon(
                                 Icons.Filled.Close,
                                 contentDescription = "关闭",
-                                modifier = Modifier.Companion.background(Color.Companion.Transparent),
+                                modifier = Modifier.background(Color.Transparent),
                                 tint = ColorPack.secondary
                             )
                         }
@@ -296,15 +292,15 @@ class NotificationManagerDelayCan: DialogFragment() {
                         Text(
                             text = "已隐藏/延后的通知",
                             fontSize = 20.sp,
-                            fontWeight = FontWeight.Companion.Bold,
+                            fontWeight = FontWeight.Bold,
                             color = ColorPack.primary,
-                            modifier = Modifier.Companion.padding(start = 0.dp)
+                            modifier = Modifier.padding(start = 0.dp)
                         )
                     }
                     //右侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.Companion.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
 
                     }
@@ -323,8 +319,8 @@ class NotificationManagerDelayCan: DialogFragment() {
                      enabled: Boolean = true,
                      content: @Composable () -> Unit ) {
         val backgroundModifier = when {
-            gradient != null -> Modifier.Companion.background(gradient)
-            else -> Modifier.Companion.background(backgroundColor)
+            gradient != null -> Modifier.background(gradient)
+            else -> Modifier.background(backgroundColor)
         }
         Box(
             modifier = modifier
@@ -333,11 +329,11 @@ class NotificationManagerDelayCan: DialogFragment() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
+                    spotColor = Color.Black.copy(alpha = 0.4f),
                     ambientColor = Color.Black.copy(alpha = 0.4f)
                 )
                 .then(
-                    if (border != null) Modifier.Companion.border(
+                    if (border != null) Modifier.border(
                         border,
                         CircleShape
                     ) else Modifier.Companion
@@ -352,7 +348,7 @@ class NotificationManagerDelayCan: DialogFragment() {
                         color = Color.Gray
                     )
                 ) { onClick() },
-            contentAlignment = Alignment.Companion.Center,
+            contentAlignment = Alignment.Center,
         ) {
             content()
         }
@@ -364,7 +360,7 @@ class NotificationManagerDelayCan: DialogFragment() {
                 .fillMaxWidth()
                 .height(height)
                 .background(
-                    Brush.Companion.verticalGradient(
+                    Brush.verticalGradient(
                         colors = listOf(
                             ColorPack.surface.copy(alpha = 0.90f),
                             ColorPack.surface.copy(alpha = 0.0f)
@@ -375,13 +371,14 @@ class NotificationManagerDelayCan: DialogFragment() {
     }
     @Composable
     fun ContentRoot(topBarHeight: Dp){
+        //观察通知列表
+        val noticeList by NotificationManagerRepo.delayList.collectAsState()
         Column(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(top = topBarHeight),
+                //.verticalScroll(rememberScrollState())
         ) {
-
+            NoticeListColumn(noticeList, topBarHeight)
         }
     }
     @SuppressLint("UnrememberedMutableState")
@@ -391,7 +388,7 @@ class NotificationManagerDelayCan: DialogFragment() {
         val contentPadding by derivedStateOf {
             PaddingValues(
                 top = animatedTopPadding,
-                bottom = 400.dp,
+                bottom = 200.dp,
                 start = 0.dp,
                 end = 0.dp
             )
@@ -429,7 +426,7 @@ class NotificationManagerDelayCan: DialogFragment() {
                                 text = "ID $selectedUUID",
                                 fontSize = 10.sp,
                                 color = ColorPack.secondary,
-                                modifier = Modifier.Companion.padding(
+                                modifier = Modifier.padding(
                                     horizontal = 10.dp,
                                     vertical = 3.dp
                                 )
@@ -438,7 +435,7 @@ class NotificationManagerDelayCan: DialogFragment() {
                                 text = "包名 ${notice.packageName}",
                                 fontSize = 10.sp,
                                 color = ColorPack.secondary,
-                                modifier = Modifier.Companion.padding(
+                                modifier = Modifier.padding(
                                     horizontal = 10.dp,
                                     vertical = 3.dp
                                 )
@@ -446,13 +443,15 @@ class NotificationManagerDelayCan: DialogFragment() {
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        text = "查看详情",
+                                        text = "取消延后/隐藏",
                                         fontSize = 12.sp,
                                         color = ColorPack.primary
                                     )
                                 },
                                 onClick = {
-
+                                    //取消延后/隐藏
+                                    cancelHideNotification(notice.key)
+                                    //关闭菜单
                                     selectedUUID = null
                                 }
                             )
@@ -466,21 +465,8 @@ class NotificationManagerDelayCan: DialogFragment() {
                                 },
                                 onClick = {
                                     //打开系统通知设置页面
-
+                                    openNotificationSetting(notice.packageName)
                                     //关闭菜单
-                                    selectedUUID = null
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "忽略该应用",
-                                        fontSize = 12.sp,
-                                        color = ColorPack.primary
-                                    )
-                                },
-                                onClick = {
-
                                     selectedUUID = null
                                 }
                             )
@@ -585,6 +571,17 @@ class NotificationManagerDelayCan: DialogFragment() {
         //卡片底色
         background = Color(0xFF121212),
     )
+
+    //取消隐藏通知
+    private fun cancelHideNotification(key: String){
+        NotificationManagerRepo.cancelDelayNotification(key)
+    }
+    //打开系统通知设置页面
+    private fun openNotificationSetting(packageName: String){
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        startActivity(intent)
+    }
+
 
     //检查权限
     private fun changePermissionState() {
