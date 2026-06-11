@@ -57,6 +57,21 @@ object SettingsRequestCenter {
 
         return PREFS_SlightMove_Clip == 1
     }
+    //数值：微动量数值
+    private var VALUE_SlightMove = 0
+    fun set_VALUE_SlightMove(value: Int){
+        VALUE_SlightMove = value
+        PREFS_DarkMode.edit { putInt("VALUE_SlightMove", value) }
+    }
+    fun get_VALUE_SlightMove(context: Context): Int{
+        //确保配置清单已初始化
+        if (!state_PREFS_DarkMode_initialized){
+            PREFS_DarkMode = context.getSharedPreferences("PREFS_DarkMode", 0)
+            state_PREFS_DarkMode_initialized = true
+        }
+
+        return VALUE_SlightMove
+    }
     //设置项：将裁剪后的图片保存到外部相册
     private var PREFS_Save_Clip_Out = -1
     fun set_PREFS_Save_Clip_Out(EnableSaveClipOut: Boolean){

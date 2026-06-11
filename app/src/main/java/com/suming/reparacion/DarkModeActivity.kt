@@ -25,7 +25,6 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -41,6 +40,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,6 +48,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -81,8 +82,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -93,7 +92,7 @@ import androidx.core.graphics.scale
 import androidx.core.view.WindowCompat
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.lifecycleScope
-import com.suming.reparacion.ActivityComponents.DarkModeFragment
+import com.suming.reparacion.ActivityComponents.DarkMode.DarkModeFragment
 import com.suming.reparacion.AddonTools.showCustomToast
 import com.suming.reparacion.DataPack.Descriptions
 import com.suming.reparacion.FunctionalPack.BitmapLoader
@@ -111,10 +110,9 @@ import java.io.OutputStream
 
 @Suppress("LocalVariableName")
 class DarkModeActivity: AppCompatActivity() {
-
+    //重复过滤器
     private val CoolDownGap_createShortcut = 4000L
     private var lastClickMillis: Long = 0
-
     //ContentArea
     private lateinit var NestedScrollArea: NestedScrollView
 
@@ -142,8 +140,6 @@ class DarkModeActivity: AppCompatActivity() {
         }
 
 
-        //注册开关
-        registerSwitchAction()
 
         //加载图片展示区
         initLoadWallpapers()
@@ -471,28 +467,6 @@ class DarkModeActivity: AppCompatActivity() {
     //访问xml颜色表 colorResource(id = R.color.HeadText)
 
     //Functions
-    //注册开关行为
-    private lateinit var switch_save_clip_out: SwitchCompat
-    private lateinit var switch_enable_slightMove: SwitchCompat
-    private fun registerSwitchAction(){
-        lifecycleScope.launch {
-            /*
-            //开关：将选择的壁纸保存到外部
-            switch_save_clip_out = findViewById(R.id.switchToGallery)
-            switch_save_clip_out.setOnCheckedChangeListener { _, isChecked ->
-                SettingsRequestCenter.set_PREFS_Save_Clip_Out(isChecked)
-            }
-            switch_save_clip_out.isChecked = SettingsRequestCenter.get_PREFS_Save_Clip_Out(this@DarkModeActivity)
-            //开关：壁纸slightMove
-            switch_enable_slightMove = findViewById(R.id.switchSlightMove)
-            switch_enable_slightMove.setOnCheckedChangeListener { _, isChecked ->
-                SettingsRequestCenter.set_PREFS_SlightMove_Clip(isChecked)
-            }
-            switch_enable_slightMove.isChecked = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this@DarkModeActivity)
-
-             */
-        }
-    }
     //注册非必要按钮
     private fun registerMoreActions(){
         //点击图标彩蛋
@@ -598,7 +572,7 @@ class DarkModeActivity: AppCompatActivity() {
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK && result.data != null) {
             val selectedImageUri = result.data?.data
-            selectedImageUri?.let { saveImage(it, pickImageMode) }
+            selectedImageUri?.let { processAndSaveImage(it, pickImageMode) }
         }
     }
     private fun openGalleryToPick(mode: String) {
@@ -606,15 +580,18 @@ class DarkModeActivity: AppCompatActivity() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         pickImageLauncher.launch(intent)
     }
-    //保存图片到应用内部储存 + 可选外部
-    private fun saveImage(uri: Uri, mode: String) {
-        fun cropBitmap(bitmapScaled: Bitmap, x: Int, y: Int, width: Int, height: Int): Bitmap {
-            return Bitmap.createBitmap(bitmapScaled, x, y, width, height)
-        }
-        fun info(bitmapForScale: Bitmap): Bitmap {
-            //获取图片分辨率
+    //处理并保存图片
+    private fun processAndSaveImage(uri: Uri, mode: String) {
+        //infoBitmap：获取图片信息
+        fun infoBitmap(bitmapForScale: Bitmap): Pair<Int, Int> {
+            //获取图片原始分辨率
             val picWidth = bitmapForScale.width
             val picHeight = bitmapForScale.height
+
+            return Pair(picWidth, picHeight)
+        }
+        //infoScreen：获取屏幕分辨率
+        fun infoScreen(): Pair<Int, Int> {
             //获取屏幕分辨率
             var screenWidth: Int
             var screenHeight: Int
@@ -634,100 +611,138 @@ class DarkModeActivity: AppCompatActivity() {
                 screenWidth = realMetrics.widthPixels
                 screenHeight = realMetrics.heightPixels
             }
-            //缩放：可以把任何图片缩放并裁剪为手机分辨率
-            var bitmapScaled: Bitmap
+
+            return Pair(screenWidth, screenHeight)
+
+        }
+        //缩放并裁剪为屏幕分辨率
+        fun scaleAndCropBitmap(bitmapForScale: Bitmap, picWidth: Int, picHeight: Int, screenWidth: Int, screenHeight: Int): Bitmap {
+            consoleLog("DarkModeActivity: 开始把图片缩放并裁剪为手机屏幕分辨率")
             val heightRatio = screenHeight.toFloat() / picHeight.toFloat()
             val newWidth = (picWidth * heightRatio).toInt()
             val newHeight = (picHeight * heightRatio).toInt()
-            bitmapScaled = bitmapForScale.scale(newWidth, newHeight)
-            val picWidth2= bitmapScaled.width
-            if (picWidth2>=screenWidth){
-                var x: Int
-                x= (picWidth2/2) - (screenWidth/2)
-                val y=0
-                val width=screenWidth
-                val height=screenHeight
-                bitmapScaled=cropBitmap(bitmapScaled,x,y,width,height)
+            var scaledBitmap: Bitmap? = bitmapForScale.scale(newWidth, newHeight)
+            if( scaledBitmap == null ){
+                consoleLog("DarkModeActivity: 严重错误 scaledBitmap == null")
+                return bitmapForScale
             }
-            if(picWidth2<screenWidth){
+            val picWidth2 = scaledBitmap.width
+            //分别处理
+            if ( picWidth2 >= screenWidth ){
+                val x: Int = ( picWidth2 / 2 ) - ( screenWidth / 2 )
+                val y = 0
+                scaledBitmap = Bitmap.createBitmap(scaledBitmap,x,y, screenWidth, screenHeight)
+            }
+            if( picWidth2 < screenWidth ){
                 val widthRatio = screenWidth.toFloat() / picWidth.toFloat()
-                val newWidth = (picWidth * widthRatio).toInt()
-                val newHeight = (picHeight * widthRatio).toInt()
-                bitmapScaled = bitmapForScale.scale(newWidth, newHeight)
-                val picHeight2= bitmapScaled.height
+                val newWidth = ( picWidth * widthRatio ).toInt()
+                val newHeight = ( picHeight * widthRatio ).toInt()
+                scaledBitmap = bitmapForScale.scale( newWidth, newHeight )
+                val picHeight2 = scaledBitmap.height
                 val x = 0
-                var y: Int
-                y= (picHeight2/2) - (screenHeight/2)
-                val width=screenWidth
-                val height=screenHeight
-                bitmapScaled=cropBitmap(bitmapScaled,x,y,width,height)
+                val y: Int = (picHeight2/2) - (screenHeight/2)
+                scaledBitmap = Bitmap.createBitmap(scaledBitmap,x,y, screenWidth, screenHeight)
             }
-            //微动
-            if(SettingsRequestCenter.get_PREFS_SlightMove_Clip(this@DarkModeActivity)) {
-                val x = 0
-                val y = SettingsRequestCenter.get_PREFS_SlightMove_value(this@DarkModeActivity)
-                val width = screenWidth
-                val height = screenHeight - 2 * y
-                bitmapScaled = cropBitmap(bitmapScaled,x,y,width,height)
-            } else {
-                    val x = 0
-                    val y = 50
-                    val width = screenWidth
-                    val height = screenHeight-100
-                    bitmapScaled = cropBitmap(bitmapScaled,x,y,width,height)
-                }
-
-            return bitmapScaled
+            return scaledBitmap
         }
-        contentResolver.openInputStream(uri)?.use { inputStream ->
-            //解码图片实例
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-            val bitmapForScale = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-            val croppedBitmap = info(bitmapForScale)
-            //取文件实例
-            val wallpaperFileWrapper = WallpaperFileWrapper()
-            val file = wallpaperFileWrapper.wrapFile(this,mode = mode)
-            //保存图片到App内部储存
-            consoleLog("saveImage: 开始保存图片到App内部储存 path:${file.path} name:${file.name} absolutePath:${file.absolutePath} ")
-            FileOutputStream(file).use { outputStream ->
-                croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        //裁剪为微动尺寸
+        fun clipBitmap(bitmapForScale: Bitmap, screenWidth: Int, screenHeight: Int): Bitmap {
+            val x = 0
+            val y = SettingsRequestCenter.get_VALUE_SlightMove(this@DarkModeActivity)
+            val height = screenHeight - 2 * y
+
+            return Bitmap.createBitmap(bitmapForScale,x,y, screenWidth,height)
+        }
+
+        //取出目标图片
+        val originalBitmap =  contentResolver.openInputStream(uri)?.use { inputStream ->
+            BitmapFactory.decodeStream(inputStream)
+        }
+        //检查图片是否有效
+        if (originalBitmap == null) {
+            showCustomToast("图片读取失败")
+            return
+        }
+        //创建副本
+        val originalBitmapForScale = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
+        //获取必要信息
+        val (picWidth ,picHeight) = infoBitmap(originalBitmapForScale)
+        val (screenWidth, screenHeight) = infoScreen()
+        //裁剪为屏幕分辨率
+        val croppedBitmap = scaleAndCropBitmap(originalBitmapForScale,picWidth,picHeight,screenWidth,screenHeight)
+        //裁剪微动版本
+        val clippedBitmap = clipBitmap(croppedBitmap,screenWidth,screenHeight)
+        //保存图片到内部
+        saveImageInternal(croppedBitmap, clippedBitmap, mode)
+
+
+        //在设置清单中写入标志位
+        when (mode) {
+            "dark" -> {
+                //保存标记
+                SettingsRequestCenter.set_State_dark_paper_set(this@DarkModeActivity, true)
+                //立即加载到预览视图
+                loadImage("dark",push = true)
             }
-            //保存图片到外部相册
-            if (SettingsRequestCenter.get_PREFS_Save_Clip_Out(this@DarkModeActivity)) {
-                //指定外部路径并保存
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/使用过的壁纸")
-                }
-                val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                imageUri?.let {
-                    val outputStream: OutputStream? = contentResolver.openOutputStream(it)
-                    outputStream?.use { stream ->
-                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-                    }
-                }
+            "light" -> {
+                //保存标记
+                SettingsRequestCenter.set_State_light_paper_set(this@DarkModeActivity, true)
+                //立即加载到预览视图
+                loadImage("light",push = true)
             }
-            //在设置清单中写入标志位
-            when (mode) {
-                "dark" -> {
-                    //保存标记
-                    SettingsRequestCenter.set_State_dark_paper_set(this@DarkModeActivity, true)
-                    //立即加载到预览视图
-                    loadImage("dark",push = true)
-                }
-                "light" -> {
-                    //保存标记
-                    SettingsRequestCenter.set_State_light_paper_set(this@DarkModeActivity, true)
-                    //立即加载到预览视图
-                    loadImage("light",push = true)
-                }
+        }
+
+        //可选 - 保存图片到外部相册
+        if (SettingsRequestCenter.get_PREFS_Save_Clip_Out(this@DarkModeActivity)) {
+            saveImageToExternal(croppedBitmap, clippedBitmap)
+        }
+    }
+    //保存图片到内部
+    private fun saveImageInternal(croppedBitmap: Bitmap, clippedBitmap: Bitmap, mode: String){
+        //定义文件实例
+        val wallpaperFileWrapper = WallpaperFileWrapper()
+        val (file,fileClipped) = wallpaperFileWrapper.wrapFile(this,mode = mode)
+
+        //保存原图
+        FileOutputStream(file).use { outputStream ->
+            croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        }
+        //保存裁剪后的图片
+        FileOutputStream(fileClipped).use { outputStream ->
+            clippedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        }
+
+    }
+    //保存图片到外部
+    private fun saveImageToExternal(bitmap: Bitmap, clippedBitmap: Bitmap) {
+        //保存原图
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "original.jpg")
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/使用过的壁纸")
+        }
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let {
+            val outputStream: OutputStream? = contentResolver.openOutputStream(it)
+            outputStream?.use { stream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            }
+        }
+        //保存裁剪后的图片
+        val clippedValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "clipped.jpg")
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/使用过的壁纸")
+        }
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, clippedValues)?.let {
+            val outputStream: OutputStream? = contentResolver.openOutputStream(it)
+            outputStream?.use { stream ->
+                clippedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
             }
         }
     }
     //加载本地图片
     @SuppressLint("CutPasteId")
-    private fun loadImage(mode: String, push: Boolean = false): Pair<Boolean, Bitmap?> {
+    private fun loadImage(mode: String, needClipped: Boolean = false, push: Boolean = false): Pair<Boolean, Bitmap?> {
         val bitmapLoader = BitmapLoader()
         when(mode){
             //深色壁纸
@@ -735,9 +750,14 @@ class DarkModeActivity: AppCompatActivity() {
                 consoleLog("loadImage: 开始加载深色壁纸")
                 //直接取文件实例
                 val wallpaperFileWrapper = WallpaperFileWrapper()
-                val file = wallpaperFileWrapper.wrapFile(this,mode = mode)
+                val (file,fileClipped) = wallpaperFileWrapper.wrapFile(this,mode = mode)
                 //找BitmapLoader请求
-                val bitmap = bitmapLoader.loadBitmap(mode,file).second
+                var bitmap: Bitmap?
+                if( needClipped){
+                    bitmap = bitmapLoader.loadBitmap(mode,fileClipped).second
+                }else{
+                    bitmap = bitmapLoader.loadBitmap(mode,file).second
+                }
                 //
                 if(bitmap == null){
                     consoleLog("loadImage: 加载深色壁纸失败")
@@ -754,9 +774,14 @@ class DarkModeActivity: AppCompatActivity() {
                 consoleLog("loadImage: 开始加载浅色壁纸")
                 //直接取文件实例
                 val wallpaperFileWrapper = WallpaperFileWrapper()
-                val file = wallpaperFileWrapper.wrapFile(this,mode = mode)
+                val (file,fileClipped) = wallpaperFileWrapper.wrapFile(this,mode = mode)
                 //找BitmapLoader请求
-                val bitmap = bitmapLoader.loadBitmap(mode,file).second
+                var bitmap: Bitmap?
+                if( needClipped){
+                    bitmap = bitmapLoader.loadBitmap(mode,fileClipped).second
+                }else{
+                    bitmap = bitmapLoader.loadBitmap(mode,file).second
+                }
                 //
                 if(bitmap == null){
                     consoleLog("loadImage: 加载浅色壁纸失败")
@@ -825,10 +850,12 @@ class DarkModeActivity: AppCompatActivity() {
         }else{
             //根据传入参数删除对应文件
             val wallpaperFileWrapper = WallpaperFileWrapper()
-            val wallpaperFile = wallpaperFileWrapper.wrapFile(this,mode = target)
-            val file = wallpaperFileWrapper.wrapFile(this,mode = target)
+            val (file,fileClipped) = wallpaperFileWrapper.wrapFile(this,mode = target)
             if (file.exists()) {
                 file.delete()
+            }
+            if (fileClipped.exists()) {
+                fileClipped.delete()
             }
         }
     }
@@ -929,7 +956,8 @@ class DarkModeActivity: AppCompatActivity() {
         //先确认有没有图,修改按钮提示文字
         if (SettingsRequestCenter.get_State_dark_paper_set(this@DarkModeActivity)) {
             //再确认文件是否存在
-            val (success,bitmap) = loadImage("dark")
+            val needClipped = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this)
+            val (success,bitmap) = loadImage("dark",needClipped)
             if (success){
                 if (bitmap != null){
                     //应用到系统
@@ -958,7 +986,8 @@ class DarkModeActivity: AppCompatActivity() {
         //先确认有没有图,修改按钮提示文字
         if (SettingsRequestCenter.get_State_light_paper_set(this@DarkModeActivity)) {
             //再确认文件是否存在
-            val (success,bitmap) = loadImage("light")
+            val needClipped = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this)
+            val (success,bitmap) = loadImage("light",needClipped)
             if (success){
                 if (bitmap != null){
                     //应用到系统

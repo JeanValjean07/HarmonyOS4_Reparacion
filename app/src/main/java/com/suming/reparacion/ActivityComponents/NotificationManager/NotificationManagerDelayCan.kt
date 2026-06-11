@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
@@ -89,6 +90,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.AddonTools.showCustomToast
 import com.suming.reparacion.DataPack.Connect
 import com.suming.reparacion.DataPack.NotificationPack
 import com.suming.reparacion.R
@@ -166,8 +168,8 @@ class NotificationManagerDelayCan: DialogFragment() {
 
         //观察通知列表
         //需要在compose函数中发起观察
-        //发起收集
-        NotificationManagerRepo.setServiceConnect(Connect.service_intent_get_delay_list)
+        //发起收集所有延后通知
+        refreshSnoozeNotification()
 
         //设置composeRoot
         ComposeRoot.setContent {
@@ -189,7 +191,7 @@ class NotificationManagerDelayCan: DialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        consoleLog("Fragment onResume")
+        consoleLog("生命周期 Fragment NotificationManagerDelayCan onResume")
         checkPermission()
     }
 
@@ -265,7 +267,6 @@ class NotificationManagerDelayCan: DialogFragment() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    //左侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -297,12 +298,28 @@ class NotificationManagerDelayCan: DialogFragment() {
                             modifier = Modifier.padding(start = 0.dp)
                         )
                     }
-                    //右侧
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-
+                        //刷新按钮
+                        CircleButton(
+                            onClick = { refreshSnoozeNotification() },
+                            backgroundColor = ColorPack.background.copy(alpha = 0.99f),
+                            size = 40.dp,
+                            border = BorderStroke(
+                                width = 0.5.dp,
+                                color = Color.Gray.copy(alpha = 0.1f)
+                            ),
+                            modifier = Modifier.padding(end = 10.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Refresh,
+                                contentDescription = "刷新",
+                                modifier = Modifier.background(Color.Transparent),
+                                tint = ColorPack.secondary
+                            )
+                        }
                     }
                 }
             }
@@ -397,13 +414,13 @@ class NotificationManagerDelayCan: DialogFragment() {
         var selectedUUID by remember { mutableStateOf<String?>(null) }
         var showMenu by remember { mutableStateOf(false) }
         LazyColumn(
-            modifier = Modifier.Companion.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             items(noticeList) { notice ->
                 Box(
-                    modifier = Modifier.Companion.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     NoticeCard(
                         packageName = notice.packageName,
@@ -419,7 +436,7 @@ class NotificationManagerDelayCan: DialogFragment() {
                                 x = 100.dp,
                                 y = 0.dp
                             ),
-                            modifier = Modifier.Companion.wrapContentSize()
+                            modifier = Modifier.wrapContentSize()
                                 .background(ColorPack.background)
                         ) {
                             Text(
@@ -479,23 +496,23 @@ class NotificationManagerDelayCan: DialogFragment() {
     @Composable
     fun NoticeCard(packageName: String, title: String, text: String, onClick: () -> Unit) {
         Card(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 3.dp)
                 .uniformShadow()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color.Companion.Transparent),
+                .background(Color.Transparent),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
             border = BorderStroke(
                 width = 0.5.dp,
-                color = Color.Companion.Gray.copy(alpha = 0.1f)
+                color = Color.Gray.copy(alpha = 0.1f)
             ),
             colors = CardDefaults.cardColors(containerColor = ColorPack.background,),
             onClick = onClick
         ) {
             Column(
-                modifier = Modifier.Companion.fillMaxWidth().padding(13.dp)
+                modifier = Modifier.fillMaxWidth().padding(13.dp)
             ) {
                 //App名称
                 Text(
@@ -504,16 +521,16 @@ class NotificationManagerDelayCan: DialogFragment() {
                     color = ColorPack.secondary
                 )
                 //大小标题间距
-                Spacer(modifier = Modifier.Companion.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 //大标题
                 Text(
                     text = title,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Companion.Medium,
+                    fontWeight = FontWeight.Medium,
                     color = ColorPack.primary
                 )
                 //大小标题间距
-                Spacer(modifier = Modifier.Companion.height(4.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 //小标题或描述
                 Text(
                     text = text,
@@ -527,7 +544,7 @@ class NotificationManagerDelayCan: DialogFragment() {
     @Suppress("DEPRECATION")
     fun Modifier.uniformShadow(
         blurRadius: Float = 15f,
-        shadowColor: Color = Color.Companion.Black.copy(alpha = 0.1f)
+        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
     ) = this.drawBehind {
         drawIntoCanvas { canvas ->
             val paint = Paint().apply {
@@ -564,7 +581,7 @@ class NotificationManagerDelayCan: DialogFragment() {
         )
     private val DarkColorScheme = darkColorScheme(
         //全局底色
-        surface = Color(0xFF000000),
+        surface = Color(0xFF181818),
         //一级和二级文字
         primary = Color(0xFFFFFFFF),
         secondary = Color(0xFFF6F6F6),
@@ -575,11 +592,17 @@ class NotificationManagerDelayCan: DialogFragment() {
     //取消隐藏通知
     private fun cancelHideNotification(key: String){
         NotificationManagerRepo.cancelDelayNotification(key)
+        requireContext().showCustomToast("已取尝试消隐藏该通知,稍后它将会出现")
     }
     //打开系统通知设置页面
     private fun openNotificationSetting(packageName: String){
         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
         startActivity(intent)
+    }
+    //刷新通知列表
+    private fun refreshSnoozeNotification(){
+        NotificationManagerRepo.clearDelayAll()
+        NotificationManagerRepo.setServiceConnect(Connect.service_intent_get_delay_list)
     }
 
 

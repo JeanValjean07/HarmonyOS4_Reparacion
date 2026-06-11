@@ -11,7 +11,7 @@ class BitmapLoader {
 
     //传入目标File
     @SuppressLint("CutPasteId")
-    fun loadBitmap(mode: String, file: File): Pair<Boolean, Bitmap?> {
+    fun loadBitmap(mode: String,file: File): Pair<Boolean, Bitmap?> {
         when(mode){
             //深色壁纸
             "dark" -> {
@@ -63,15 +63,23 @@ class BitmapLoader {
             }
         }
     }
-
     //未传入File根据mode自己取
-    fun loadBitmap(context: Context, mode: String): Bitmap? {
+    fun loadBitmap(context: Context, mode: String, needClipped: Boolean = false): Bitmap? {
         val wallpaperFileWrapper = WallpaperFileWrapper()
-        val file = wallpaperFileWrapper.wrapFile(context,mode = mode)
-        val bitmap = loadBitmap(mode, file).second
+        val (file, fileClipped) = wallpaperFileWrapper.wrapFile(context,mode = mode)
 
-        return bitmap
+        if(needClipped){
+            val bitmap = loadBitmap(mode, fileClipped).second
+
+            return bitmap
+        }else{
+            val bitmap = loadBitmap(mode, file).second
+
+            return bitmap
+        }
+
     }
+
 
     //统一日志控制
     private fun consoleLog(msg: String, mark: Boolean = true) {

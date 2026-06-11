@@ -343,7 +343,7 @@ class NotificationManagerDelay  : DialogFragment() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
+                    spotColor = Color.Black.copy(alpha = 0.4f),
                     ambientColor = Color.Black.copy(alpha = 0.4f)
                 )
                 .then(
@@ -574,7 +574,7 @@ class NotificationManagerDelay  : DialogFragment() {
         )
     private val DarkColorScheme = darkColorScheme(
         //全局底色
-        surface = Color(0xFF000000),
+        surface = Color(0xFF181818),
         //一级和二级文字
         primary = Color(0xFFFFFFFF),
         secondary = Color(0xFFF6F6F6),

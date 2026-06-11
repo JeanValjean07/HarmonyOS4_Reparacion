@@ -14,7 +14,7 @@ object ToolList {
         ToolPackage(
             id = 2,
             name = "通知管理",
-            description = "在华为设备上进入原生通知管理界面",
+            description = "隐藏和延后通知",
             intent = "MANAGER_INTENT_NOTIFICATION_MANAGER",
 
         ),

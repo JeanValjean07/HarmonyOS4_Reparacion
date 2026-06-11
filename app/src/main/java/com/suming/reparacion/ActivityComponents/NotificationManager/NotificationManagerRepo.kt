@@ -72,6 +72,11 @@ object NotificationManagerRepo {
 
         _delayList.value = currentList
     }
+    //清除所有已延后的通知
+    fun clearDelayAll(){
+        _delayList.value = listOf()
+        updateCount()
+    }
 
 
     //取消一条通知

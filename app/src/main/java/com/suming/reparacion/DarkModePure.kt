@@ -97,7 +97,8 @@ class DarkModePure : AppCompatActivity() {
     //设置深色壁纸
     private fun setDarkWallpaper() {
         val wallpaperSetor = WallpaperSetor()
-        val bitmap = BitmapLoader().loadBitmap(this,"dark")
+        val needClipped = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this)
+        val bitmap = BitmapLoader().loadBitmap(this,"dark",needClipped)
         if (bitmap != null){
             wallpaperSetor.applySystemWallpaper(bitmap, this)
         }else{
@@ -107,7 +108,8 @@ class DarkModePure : AppCompatActivity() {
     //设置浅色壁纸
     private fun setLightWallpaper() {
         val wallpaperSetor = WallpaperSetor()
-        val bitmap = BitmapLoader().loadBitmap(this,"light")
+        val needClipped = SettingsRequestCenter.get_PREFS_SlightMove_Clip(this)
+        val bitmap = BitmapLoader().loadBitmap(this,"light",needClipped)
         if (bitmap != null){
             wallpaperSetor.applySystemWallpaper(bitmap, this)
         }else{

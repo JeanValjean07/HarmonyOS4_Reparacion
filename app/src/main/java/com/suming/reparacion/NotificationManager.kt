@@ -471,6 +471,14 @@ class NotificationManager: AppCompatActivity() {
                                     selectedUUID = null
                                 }
                             )
+                            DropdownMenuItem(
+                                text = { Text(text = "不再收集该通知", fontSize = 12.sp, color = ColorPack.primary) },
+                                onClick = {
+
+                                    //关闭菜单
+                                    selectedUUID = null
+                                }
+                            )
                         }
                     }
                 }

@@ -1,6 +1,8 @@
-package com.suming.reparacion.ActivityComponents
+package com.suming.reparacion.ActivityComponents.DarkMode
 
 import android.annotation.SuppressLint
+import android.app.Dialog
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -9,6 +11,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.Button
+import android.widget.EditText
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -22,7 +27,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,28 +37,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
@@ -65,7 +84,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.suming.reparacion.AddonTools.showCustomToast
 import com.suming.reparacion.R
+import com.suming.reparacion.SettingsRequestCenter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("UseGetLayoutInflater", "InflateParams","SetTextI18n")
@@ -73,11 +97,6 @@ class DarkModeFragment: DialogFragment() {
     companion object {
         fun newInstance(): DarkModeFragment = DarkModeFragment().apply { arguments = bundleOf(  ) }
     }
-
-    //共享ViewModel(暂未启用)
-    //private val vm: DarkModeViewModel by activityViewModels()
-    //composeRoot
-    private lateinit var ComposeRoot: ComposeView
 
 
     @Suppress("DEPRECATION")
@@ -141,13 +160,13 @@ class DarkModeFragment: DialogFragment() {
         //集中初始化
         init(view)
 
+        //
+        value_slightMove = SettingsRequestCenter.get_VALUE_SlightMove(requireContext())
+
         //设置composeRoot
         ComposeRoot.setContent {
             ComposeRoot()
         }
-
-
-
 
         //系统手势监听
         lifecycleScope.launch {
@@ -160,7 +179,7 @@ class DarkModeFragment: DialogFragment() {
                 return@setOnKeyListener false
             }
         }
-    }//</onViewCreated>
+    }
 
     //Lifecycle Functions
     private fun init(view: View){
@@ -168,7 +187,7 @@ class DarkModeFragment: DialogFragment() {
         ComposeRoot = view.findViewById(R.id.fragment_compose_root)
         //设置卡片高度
         if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
-            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.7).toInt()
+            ComposeRoot.layoutParams.height = (resources.displayMetrics.heightPixels * 0.8).toInt()
         }
     }
 
@@ -184,14 +203,13 @@ class DarkModeFragment: DialogFragment() {
             .background(ColorPack.surface)) {
 
             //顶部栏高度值
-            val statusBarHeight = WindowInsets.statusBars.getTop(LocalDensity.current)
             var topBarHeight by remember { mutableIntStateOf(300) }
             val topPaddingDp = with(LocalDensity.current) {
-                (statusBarHeight + topBarHeight).toDp()
+                topBarHeight.toDp()
             }
 
             //顶部栏高度值动画 也可不使用动画单纯传值
-            //曲线可选 CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
+            //备用曲线 CubicBezierEasing(0.0f, 0.0f, 0.2f, 1.0f)
             val animatedTopPadding by animateDpAsState(
                 targetValue = topPaddingDp,
                 animationSpec = tween(
@@ -202,8 +220,9 @@ class DarkModeFragment: DialogFragment() {
 
             //最底层
 
-            //content
 
+            //内容层
+            ContentRoot(topPaddingDp)
 
             //最顶层
             BrushArea()
@@ -212,9 +231,8 @@ class DarkModeFragment: DialogFragment() {
                 topBarHeight = height
             })
         }
-
-
     }
+    private lateinit var ComposeRoot: ComposeView
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
@@ -227,7 +245,7 @@ class DarkModeFragment: DialogFragment() {
                 .onGloballyPositioned { coordinates ->
                     onHeightMeasured(coordinates.size.height)
                 },
-            color = androidx.compose.ui.graphics.Color.Transparent,
+            color = Color.Transparent,
         ) {
             //顶部栏内容
             Column(
@@ -252,7 +270,7 @@ class DarkModeFragment: DialogFragment() {
                             size = 40.dp,
                             border = BorderStroke(
                                 width = 0.5.dp,
-                                color = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.1f)
+                                color = Color.Gray.copy(alpha = 0.1f)
                             ),
                             modifier = Modifier.padding(start = 10.dp)
                         ) {
@@ -304,8 +322,8 @@ class DarkModeFragment: DialogFragment() {
                     elevation = elevation,
                     shape = CircleShape,
                     clip = false,
-                    spotColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f),  // 控制阴影颜色
-                    ambientColor = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f)
+                    spotColor = Color.Black.copy(alpha = 0.4f),
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
                 )
                 .then(if (border != null) Modifier.border(border, CircleShape) else Modifier)
                 .clip(CircleShape)
@@ -315,12 +333,64 @@ class DarkModeFragment: DialogFragment() {
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(
                         bounded = true,
-                        color = androidx.compose.ui.graphics.Color.Gray
+                        color = Color.Gray
                     )
                 ) { onClick() },
             contentAlignment = Alignment.Center,
         ) {
             content()
+        }
+    }
+    @Composable
+    fun CapsuleButton(onClick: () -> Unit,
+                      modifier: Modifier = Modifier,
+                      text: String,
+                      backgroundColor: Color = ColorPack.background,
+                      border: BorderStroke = BorderStroke(
+                          width = 0.5.dp,
+                          color = Color.Companion.Gray.copy(alpha = 0.1f)
+                      ),
+                      elevation: Dp = 2.dp,
+                      enabled: Boolean = true,
+                      horizontalPadding: Dp = 10.dp,
+                      verticalPadding: Dp = 5.dp,
+                      textColor: Color = ColorPack.secondary) {
+        val backgroundModifier = Modifier.background(backgroundColor)
+        Box(
+            modifier = modifier
+                .wrapContentWidth()
+                .height(35.dp)
+                .shadow(
+                    elevation = elevation,
+                    shape = CircleShape,
+                    clip = false,
+                    spotColor = Color.Black.copy(alpha = 0.4f),
+                    ambientColor = Color.Black.copy(alpha = 0.4f)
+                )
+                .clip(CircleShape)
+                .then(backgroundModifier)
+                .then(Modifier.border(border, CircleShape))
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(
+                        bounded = true,
+                        color = Color.Gray
+                    )
+                ) { onClick() }
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    color = textColor,
+                )
+            }
         }
     }
     @Composable
@@ -339,6 +409,190 @@ class DarkModeFragment: DialogFragment() {
                 )
         )
     }
+    @Composable
+    fun ContentRoot(topBarHeight: Dp) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(top = topBarHeight),
+        ) {
+            SettingsCard()
+        }
+    }
+    @Composable
+    fun SettingsCard(){
+        //读取设置项
+        //设置项1 - 保存到外部储存
+        val flag_saveToExternal = remember { mutableStateOf(false) }
+        fun updateLocalPrefRemember_flag_saveToExternal (){
+            flag_saveToExternal.value = SettingsRequestCenter.get_PREFS_Save_Clip_Out(requireContext())
+        }
+        //设置项2 - 启用微动效果
+        val flag_enableSlightMove = remember { mutableStateOf(false) }
+        fun updateLocalPrefRemember_flag_enableSlightMove(){
+            flag_enableSlightMove.value = SettingsRequestCenter.get_PREFS_SlightMove_Clip(requireContext())
+        }
+
+        //集中读取设置
+        LaunchedEffect(Unit) {
+            flag_saveToExternal.value = SettingsRequestCenter.get_PREFS_Save_Clip_Out(requireContext())
+            flag_enableSlightMove.value = SettingsRequestCenter.get_PREFS_SlightMove_Clip(requireContext())
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .uniformShadow()
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                .background(Color.Transparent),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = Color.Gray.copy(alpha = 0.1f)
+            ),
+            colors = CardDefaults.cardColors(containerColor = ColorPack.background)
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                    .fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "将裁剪后的图片保存到外部储存",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Text(
+                            text = "收集没有标题和内容文本的通知",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = ColorPack.secondary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            checked = flag_saveToExternal.value,
+                            onCheckedChange = {
+                                SettingsRequestCenter.set_PREFS_Save_Clip_Out(it)
+                                updateLocalPrefRemember_flag_saveToExternal()
+                            },
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "启用微动效果",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Text(
+                            text = "允许可清除的通知被隐藏",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = ColorPack.secondary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            checked = flag_enableSlightMove.value,
+                            onCheckedChange = {
+                                SettingsRequestCenter.set_PREFS_SlightMove_Clip(it)
+                                updateLocalPrefRemember_flag_enableSlightMove()
+                            },
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "微动量数值",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ColorPack.primary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                        Spacer(modifier = Modifier.padding(top = 2.dp))
+                        Text(
+                            text = "当前值：${value_slightMove}",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = ColorPack.secondary,
+                            modifier = Modifier.padding(start = 0.dp)
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CapsuleButton(
+                            text = "修改",
+                            onClick = {
+                                 startSetValue()
+                            },
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+    //自定义阴影
+    @Suppress("DEPRECATION")
+    fun Modifier.uniformShadow(
+        blurRadius: Float = 15f,
+        shadowColor: Color = Color.Black.copy(alpha = 0.1f)
+    ) = this.drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().apply {
+                color = shadowColor
+                asFrameworkPaint().maskFilter = android.graphics.BlurMaskFilter(
+                    blurRadius,
+                    android.graphics.BlurMaskFilter.Blur.NORMAL
+                )
+            }
+
+            canvas.drawRoundRect(
+                left = 0f,
+                top = 0f,
+                right = size.width,
+                bottom = size.height,
+                radiusX = 12.dp.toPx(),
+                radiusY = 12.dp.toPx(),
+                paint = paint
+            )
+        }
+    }
     //composable颜色配置
     private var isDarkMode: Boolean = false
     private lateinit var ColorPack: ColorScheme
@@ -354,7 +608,7 @@ class DarkModeFragment: DialogFragment() {
         )
     private val DarkColorScheme = darkColorScheme(
         //全局底色
-        surface = Color(0xFF000000),
+        surface = Color(0xFF181818),
         //一级和二级文字
         primary = Color(0xFFFFFFFF),
         secondary = Color(0xFFF6F6F6),
@@ -362,6 +616,48 @@ class DarkModeFragment: DialogFragment() {
         background = Color(0xFF121212),
     )
 
+    //设置数值
+    private var value_slightMove by mutableIntStateOf(0)
+    fun updateLocalPrefRemember_value_slightMove() {
+        value_slightMove = SettingsRequestCenter.get_VALUE_SlightMove(requireContext())
+    }
+    @SuppressLint("UseGetLayoutInflater")
+    private fun startSetValue(){
+        val dialog = Dialog(requireContext())
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.activity_dark_mode_settings, null)
+        dialog.setContentView(dialogView)
+        val input: EditText = dialogView.findViewById(R.id.dialog_input)
+        val button: Button = dialogView.findViewById(R.id.dialog_button)
+        button.setOnClickListener {
+            val userInput = input.text.toString()
+            setValue(userInput)
+            dialog.dismiss()
+        }
+        dialog.show()
+        val imm = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(100)
+            input.requestFocus()
+            imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+    private fun setValue(content:String){
+        if (content.isEmpty()){
+            requireContext().showCustomToast("未填写有效内容")
+            return
+        }
+        val number = content.toInt()
+        if(number<=200){
+            SettingsRequestCenter.set_VALUE_SlightMove(number)
+            requireContext().showCustomToast("已设置为$number")
+            updateLocalPrefRemember_value_slightMove()
+            return
+        }
+        else{
+            requireContext().showCustomToast("数值过大")
+            return
+        }
+    }
 
 
     //自定义退出逻辑
