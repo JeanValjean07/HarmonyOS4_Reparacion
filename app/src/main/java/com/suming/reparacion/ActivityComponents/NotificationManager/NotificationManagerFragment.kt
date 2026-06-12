@@ -1,9 +1,6 @@
 package com.suming.reparacion.ActivityComponents.NotificationManager
 
 import android.annotation.SuppressLint
-import android.app.Dialog
-import android.content.Context.INPUT_METHOD_SERVICE
-import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.BlurMaskFilter
@@ -15,9 +12,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -86,19 +80,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.edit
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.suming.reparacion.AddonTools.showCustomToast
 import com.suming.reparacion.DataPack.Descriptions
 import com.suming.reparacion.R
 import com.suming.reparacion.SettingsRequestCenter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class NotificationManagerFragment : DialogFragment() {
@@ -160,7 +149,7 @@ class NotificationManagerFragment : DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?, ): View? {
-        return inflater.inflate(R.layout.main_general_fragment, container, false)
+        return inflater.inflate(R.layout.fragment_general, container, false)
     }
 
     @SuppressLint("UseGetLayoutInflater", "InflateParams", "SetTextI18n", "ClickableViewAccessibility", "CutPasteId")

@@ -80,7 +80,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.suming.reparacion.AddonTools.showCustomToast
-import com.suming.reparacion.DataPack.Descriptions
 import com.suming.reparacion.R
 import kotlinx.coroutines.launch
 
@@ -148,7 +147,7 @@ class NotificationManagerDelay  : DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?, ): View? {
-        return inflater.inflate(R.layout.main_general_fragment, container, false)
+        return inflater.inflate(R.layout.fragment_general, container, false)
     }
 
     @SuppressLint("UseGetLayoutInflater", "InflateParams", "SetTextI18n", "ClickableViewAccessibility", "CutPasteId")

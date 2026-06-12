@@ -249,13 +249,7 @@
                     android:backgroundTint="@color/ButtonBg"
                     android:text="清除壁纸"
                     android:textColor="@color/ButtonText" />
-                <Button
-                    android:id="@+id/buttonSetValue"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/ButtonBg"
-                    android:text="设置微动量"
-                    android:textColor="@color/ButtonText" />
+
             </LinearLayout>
 
             <!-- ExplanationCompose -->

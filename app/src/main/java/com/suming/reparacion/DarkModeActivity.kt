@@ -1,7 +1,6 @@
 package com.suming.reparacion
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -15,11 +14,8 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -40,7 +36,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,7 +43,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -98,7 +92,6 @@ import com.suming.reparacion.DataPack.Descriptions
 import com.suming.reparacion.FunctionalPack.BitmapLoader
 import com.suming.reparacion.FunctionalPack.WallpaperFileWrapper
 import com.suming.reparacion.FunctionalPack.WallpaperSetor
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -123,7 +116,7 @@ class DarkModeActivity: AppCompatActivity() {
         //界面配置
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
-        setContentView(R.layout.main_dark_mode_activity)
+        setContentView(R.layout.activity_dark_mode)
         //准备工作
         init()
 
@@ -538,28 +531,6 @@ class DarkModeActivity: AppCompatActivity() {
             clearWallPaper()
             notice("已清除")
         }
-        //按钮：设置微动值
-        val ButtonSetValue = findViewById<Button>(R.id.buttonSetValue)
-        ButtonSetValue.setOnClickListener() {
-            val dialog = Dialog(this)
-            val dialogView = LayoutInflater.from(this).inflate(R.layout.activity_dark_mode_settings, null)
-            dialog.setContentView(dialogView)
-            val input: EditText = dialogView.findViewById(R.id.dialog_input)
-            val button: Button = dialogView.findViewById(R.id.dialog_button)
-            button.setOnClickListener {
-                val userInput = input.text.toString()
-                setValue(userInput)
-                dialog.dismiss()
-            }
-            dialog.show()
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(100)
-                input.requestFocus()
-                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
-            }
-
-        }
 
     }
     //修改滚动区域顶部内边距
@@ -941,12 +912,11 @@ class DarkModeActivity: AppCompatActivity() {
         lifecycleScope.launch {
             delay(2000)
             moveTaskToBack(true)
-            //进程自杀：方案应改为直接结束虚拟机进程
-            /*Handler(Looper.getMainLooper()).postDelayed({
-            finish()
-        }, 3000)
-
-         */
+            //结束进程
+            if(SettingsRequestCenter.get_PREFS_End_Process_After(this@DarkModeActivity)){
+                val pid = android.os.Process.myPid()
+                android.os.Process.killProcess(pid)
+            }
         }
     }
     //立即切换到指定模式壁纸
@@ -1097,31 +1067,6 @@ class DarkModeActivity: AppCompatActivity() {
 
         shortcutManager?.requestPinShortcut(shortcut, null)
     }
-
-
-
-
-    private fun setValue(content:String){
-        if (content.isEmpty()){
-            notice("未填写有效内容")
-            return
-        }
-        val number = content.toInt()
-        if(number<=200){
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            sharedPreferences.edit{
-                putInt("SlightValue",number)
-            }
-            notice("已设置为$number")
-            return
-        }
-        else{
-            notice("数值过大")
-            return
-        }
-    }
-
-
 
 
 

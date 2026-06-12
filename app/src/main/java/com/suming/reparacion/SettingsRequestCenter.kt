@@ -70,6 +70,9 @@ object SettingsRequestCenter {
             state_PREFS_DarkMode_initialized = true
         }
 
+        VALUE_SlightMove = PREFS_DarkMode.getInt("VALUE_SlightMove", 0)
+
+
         return VALUE_SlightMove
     }
     //设置项：将裁剪后的图片保存到外部相册
@@ -93,6 +96,28 @@ object SettingsRequestCenter {
         }
 
         return PREFS_Save_Clip_Out == 1
+    }
+    //设置项：返回桌面后结束进程
+    private var PREFS_End_Process_After = -1
+    fun set_PREFS_End_Process_After(EnableEndProcessAfter: Boolean){
+        PREFS_End_Process_After = if (EnableEndProcessAfter) 1 else 0
+        PREFS_DarkMode.edit { putInt("PREFS_End_Process_After", if (EnableEndProcessAfter) 1 else 0) }
+    }
+    fun get_PREFS_End_Process_After(context: Context): Boolean{
+        //确保配置清单已初始化
+        if (!state_PREFS_DarkMode_initialized){
+            PREFS_DarkMode = context.getSharedPreferences("PREFS_DarkMode", 0)
+            state_PREFS_DarkMode_initialized = true
+        }
+        //确保配置项已被读取过
+        if (PREFS_End_Process_After == -1){
+            PREFS_End_Process_After = PREFS_DarkMode.getInt("PREFS_End_Process_After", -1)
+            if (PREFS_End_Process_After == -1){
+                PREFS_DarkMode.edit { putInt("PREFS_End_Process_After", 0) }
+            }
+        }
+
+        return PREFS_End_Process_After == 1
     }
     //状态值：是否已设置浅色壁纸
     private var STATE_dark_paper_set = -1
@@ -229,4 +254,4 @@ object SettingsRequestCenter {
 
 
 
-}//</object>
+}

@@ -78,12 +78,7 @@
             />
         <!-- 设置 -->
         <activity android:name="com.suming.reparacion.SettingsActivity"
-            android:label="设置"
-            android:exported="true"
-            />
-        <!-- 关于 -->
-        <activity android:name="com.suming.reparacion.AboutAppActivity"
-            android:label="关于"
+            android:label="设置/关于"
             android:exported="true"
             />
 
